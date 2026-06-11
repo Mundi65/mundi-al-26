@@ -86,7 +86,7 @@
   .score{display:flex;align-items:center;gap:4px;flex:none}
   .score input{width:38px;height:40px;text-align:center;font-family:'JetBrains Mono';font-weight:800;font-size:18px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;outline:none}
   .score input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,90,60,.18)}
-  .score input.auto{border-color:rgba(34,197,94,.5)}
+  .score input.real{background:rgba(34,197,94,.20);border-color:var(--green);color:#7CF0A8;cursor:default;-webkit-text-fill-color:#7CF0A8;opacity:1;font-weight:800}
   .score .dash{color:var(--mut);font-weight:800}
 
   .stand{padding:6px 12px 16px}
@@ -145,7 +145,8 @@
   .ko-side .nm.ph{color:var(--mut);font-style:italic;font-weight:500;font-size:12px}
   .ko-side .ski{width:34px;height:36px;text-align:center;font-family:'JetBrains Mono';font-weight:800;font-size:16px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;outline:none}
   .ko-side .ski:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,90,60,.18)}
-  .ko-side .ski.auto{border-color:rgba(34,197,94,.5)}
+  .ko-side .ski.real{background:rgba(34,197,94,.20);border-color:var(--green);color:#7CF0A8;-webkit-text-fill-color:#7CF0A8;opacity:1;cursor:default}
+  .ko-pk.locked .pkwin{color:var(--green);font-weight:800;font-size:11px}
   .ko-side.win{background:rgba(34,197,94,.10)}
   .ko-side.win .nm{color:var(--green);font-weight:800}
   .ko-pk{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:var(--mut);font-weight:700}
@@ -265,14 +266,13 @@
     <button class="sync" id="btnSync"><span class="ic">🔄</span><span class="tx">Actualizar resultados</span></button>
     <div class="status" id="syncStatus">Resultados reales desde openfootball (se actualiza ~1 vez al día).</div>
     <label><input type="checkbox" id="optAuto"> Actualizar al abrir</label>
-    <label><input type="checkbox" id="optOver"> Sobrescribir lo que escribí</label>
   </div>
 
   <section id="tab-grupos">
     <div class="legend">
       <span><i style="background:var(--green)"></i>Clasifica (1º y 2º)</span>
       <span><i style="background:var(--amber)"></i>Tercero</span>
-      <span><i style="background:rgba(34,197,94,.5)"></i>Automático</span>
+      <span><i style="background:var(--green)"></i>Resultado real (bloqueado)</span>
     </div>
     <div class="submenu" id="groupMenu"></div>
     <div id="groups"></div>
@@ -298,6 +298,7 @@
   <footer>
     <b>Tus datos se guardan en este navegador</b> (localStorage) — funciona offline y en GitHub Pages.<br>
     Resultados reales: openfootball/worldcup.json (dominio público, sin API key). Actualiza aprox. 1 vez al día.<br>
+    Cuando llega el resultado real, queda en verde y bloqueado (ya no se puede cambiar).<br>
     La asignación de los 8 terceros en el cuadro usa una aproximación; cuando el dato real llega, sobrescribe los nombres.<br>
     Hecho para DIGIWAV · Edmundo Guillén
   </footer>
@@ -433,11 +434,11 @@ function slotLabel(tok){
 
 /* ============ INPUTS DE MARCADOR (reutilizable) ============ */
 function scoreInputs(n,cls){
-  const s=state.scores[n]||{};const auto=s.src==='auto'?'auto':'';
+  const s=state.scores[n]||{};const locked=s.src==='auto';const lk=locked?'real':'';const ro=locked?'readonly':'';
   return `<div class="score">
-    <input type="number" min="0" inputmode="numeric" class="${cls||''} ${auto}" data-n="${n}" data-side="h" value="${s.h!=null?s.h:''}">
+    <input type="number" min="0" inputmode="numeric" class="${cls||''} ${lk}" ${ro} data-n="${n}" data-side="h" value="${s.h!=null?s.h:''}">
     <span class="dash">–</span>
-    <input type="number" min="0" inputmode="numeric" class="${cls||''} ${auto}" data-n="${n}" data-side="a" value="${s.a!=null?s.a:''}">
+    <input type="number" min="0" inputmode="numeric" class="${cls||''} ${lk}" ${ro} data-n="${n}" data-side="a" value="${s.a!=null?s.a:''}">
   </div>`;
 }
 
@@ -544,12 +545,15 @@ function renderKO(){
 function koCard(m){
   const n=m.n;const {t1,t2}=koTeams(n);const s=state.scores[n]||{};const w=koWinner(n);
   const title=m.stage==='F'?'FINAL':m.stage==='TP'?'Tercer puesto':'';
-  const auto=s.src==='auto'?'auto':'';const dt=fmtDate(m.date);
+  const locked=s.src==='auto';const lk=locked?'real':'';const ro=locked?'readonly':'';const dt=fmtDate(m.date);
   const side=(team,tok,side,win)=>`<div class="ko-side ${win?'win':''}">${team?flag(team):''}
     <span class="nm ${team?'':'ph'}">${team||slotLabel(tok)}</span>
-    <input class="ski ${auto}" type="number" min="0" inputmode="numeric" data-n="${n}" data-side="${side}" value="${s[side]!=null?s[side]:''}" ${team?'':'disabled'}></div>`;
+    <input class="ski ${lk}" type="number" min="0" inputmode="numeric" data-n="${n}" data-side="${side}" value="${s[side]!=null?s[side]:''}" ${team&&!locked?'':'disabled'} ${ro}></div>`;
   const tie=s.h!=null&&s.a!=null&&s.h===s.a;
-  let pk='';if(tie){pk=`<div class="ko-pk"><span>Penales:</span>
+  let pk='';
+  if(tie&&locked){const ganador=s.pk==='h'?t1:s.pk==='a'?t2:null;
+    pk=ganador?`<div class="ko-pk locked"><span>Penales:</span><span class="pkwin">${ganador} ✓</span></div>`:'';}
+  else if(tie){pk=`<div class="ko-pk"><span>Penales:</span>
     <button class="pkbtn ${s.pk==='h'?'sel':''}" data-n="${n}" data-pick="h">${t1||'Local'}</button>
     <button class="pkbtn ${s.pk==='a'?'sel':''}" data-n="${n}" data-pick="a">${t2||'Visita'}</button></div>`;}
   return `<div class="ko-match"><div class="mid">${title?'<b>'+title+'</b> · ':''}M${n} · ${dt.d} ${dt.mon} · ${m.ground||''}</div>
@@ -583,7 +587,7 @@ async function fetchResults(manual){
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
     const {byMeta,byTeams}=buildIndex();
-    const over=state.settings.over;let filled=0,named=0;
+    let filled=0,named=0;
     for(const fm of (data.matches||[])){
       const es1=EN2ES[fm.team1]||fm.team1, es2=EN2ES[fm.team2]||fm.team2;
       let n=null;
@@ -597,8 +601,7 @@ async function fetchResults(manual){
       }
       const sc=readScore(fm);
       if(sc){
-        const cur=state.scores[n];
-        if(cur&&cur.src==='manual'&&!over)continue;
+        // El resultado real es la verdad: siempre reemplaza el pronóstico y queda bloqueado.
         const obj={h:sc.h,a:sc.a,src:'auto'};
         if(sm.stage!=='group'&&sc.h===sc.a&&sc.pen)obj.pk=sc.pen[0]>sc.pen[1]?'h':'a';
         state.scores[n]=obj;filled++;
@@ -641,6 +644,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
 document.addEventListener('change',e=>{
   const el=e.target;if(!el.matches('input[data-n]'))return;
   const n=+el.dataset.n,side=el.dataset.side;
+  if(state.scores[n]&&state.scores[n].src==='auto')return; // resultado real: bloqueado
   const v=el.value===''?null:Math.max(0,parseInt(el.value,10));
   state.scores[n]=state.scores[n]||{h:null,a:null};
   state.scores[n][side]=isNaN(v)?null:v;
@@ -654,6 +658,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('click',e=>{
   if(!e.target.matches('.pkbtn'))return;
   const n=+e.target.dataset.n,pick=e.target.dataset.pick;
+  if(state.scores[n]&&state.scores[n].src==='auto')return; // resultado real: bloqueado
   state.scores[n]=state.scores[n]||{};
   state.scores[n].pk=state.scores[n].pk===pick?null:pick;
   save();renderCurrent();
@@ -683,10 +688,9 @@ document.getElementById('btnExport').addEventListener('click',()=>{
   const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
   const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mundial-2026-marcadores.json';a.click();URL.revokeObjectURL(u);
 });
-const oa=document.getElementById('optAuto'),oo=document.getElementById('optOver');
-oa.checked=state.settings.auto;oo.checked=state.settings.over;
+const oa=document.getElementById('optAuto');
+oa.checked=state.settings.auto;
 oa.addEventListener('change',()=>{state.settings.auto=oa.checked;save();});
-oo.addEventListener('change',()=>{state.settings.over=oo.checked;save();});
 
 /* ============ INIT ============ */
 renderCurrent();
