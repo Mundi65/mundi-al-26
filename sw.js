@@ -1,5 +1,5 @@
 /* MUNDI-AL 26 — service worker (offline + instalable) */
-const CACHE = 'mundial26-v2';
+const CACHE = 'mundial26-v3';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './apple-touch-icon-180.png'];
 
