@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MUNDI-AL 26</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0B1220">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MUNDI-AL 26">
+<link rel="apple-touch-icon" href="./apple-touch-icon-180.png">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220; --panel:#131C2E; --panel2:#0F1726; --line:#243049;
+    --ink:#E8EDF5; --mut:#8A97AD; --faint:#56627a;
+    --accent:#FF5A3C; --green:#22C55E; --amber:#E8B84B; --blue:#3B82F6;
+    --shadow:0 10px 30px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,90,60,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(59,130,246,.10), transparent 55%),
+      var(--bg);
+    color:var(--ink); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.45;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:0 16px 80px}
+  header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(11,18,32,.96),rgba(11,18,32,.82));
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .hbar{max-width:1100px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:14px}
+  .crest{width:46px;height:46px;flex:none;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:block}
+  .crest svg{width:100%;height:100%;display:block}
+  .htitle{font-family:'Anton';font-size:clamp(20px,4.5vw,30px);letter-spacing:.5px;line-height:1;text-transform:uppercase}
+  .htitle b{color:var(--accent)}
+  .hsub{color:var(--mut);font-size:12px;font-weight:600;letter-spacing:.4px;margin-top:3px}
+  .hactions{margin-left:auto;display:flex;gap:8px}
+  .ghost{background:transparent;border:1px solid var(--line);color:var(--mut);font-weight:700;font-size:12px;padding:8px 12px;border-radius:10px;cursor:pointer}
+  .ghost:hover{border-color:var(--accent);color:var(--ink)}
+
+  .tabs{display:flex;gap:6px;padding:14px 0 4px;flex-wrap:wrap}
+  .tab{flex:1;min-width:110px;text-align:center;background:var(--panel);border:1px solid var(--line);
+    color:var(--mut);font-weight:800;letter-spacing:.3px;font-size:12.5px;padding:11px 8px;border-radius:12px;cursor:pointer;text-transform:uppercase;transition:.15s}
+  .tab .n{font-family:'JetBrains Mono';font-size:11px;opacity:.7;margin-left:5px}
+  .tab.active{color:#160a06;background:linear-gradient(135deg,var(--accent),#FF8A3C);border-color:transparent;box-shadow:var(--shadow)}
+
+  /* update bar */
+  .ubar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:10px 14px;margin-top:12px}
+  .ubar .sync{background:linear-gradient(135deg,var(--green),#16a34a);border:none;color:#04140a;font-weight:800;
+    font-size:13px;padding:9px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .ubar .sync:disabled{opacity:.6;cursor:default}
+  .ubar .status{font-size:12px;color:var(--mut);font-weight:600;flex:1;min-width:160px}
+  .ubar .status b{color:var(--ink)}
+  .ubar label{font-size:11.5px;color:var(--mut);font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer}
+  .ubar input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+  .spin{width:14px;height:14px;border:2px solid rgba(4,20,10,.3);border-top-color:#04140a;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .intro{color:var(--mut);font-size:13px;margin:14px 2px 6px}
+  .intro b{color:var(--ink)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--mut);font-size:12px;font-weight:600;margin:12px 4px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+
+  .group{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-top:16px;overflow:hidden}
+  .ghead{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(255,90,60,.10),transparent)}
+  .gletter{font-family:'Anton';font-size:26px;width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);color:var(--accent)}
+  .ghead h3{margin:0;font-family:'Anton';letter-spacing:.6px;font-size:17px;text-transform:uppercase}
+  .ghead .gdates{color:var(--mut);font-size:11px;font-weight:600}
+  .gbody{display:grid;grid-template-columns:1fr;gap:0}
+  @media(min-width:780px){.gbody{grid-template-columns:1.05fr .95fr}}
+  .fixtures{padding:8px 12px 14px}
+  .match{display:flex;align-items:center;gap:8px;padding:8px 6px;border-radius:10px}
+  .match:hover{background:var(--panel2)}
+  .mdate{font-size:9px;color:var(--faint);font-weight:800;width:46px;flex:none;text-align:center;line-height:1.25}
+  .side{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+  .side.away{flex-direction:row-reverse;text-align:right}
+  .side .nm{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .flag{width:24px;height:18px;border-radius:3px;object-fit:cover;flex:none;background:var(--panel2);box-shadow:0 0 0 1px rgba(255,255,255,.06)}
+  .score{display:flex;align-items:center;gap:4px;flex:none}
+  .score input{width:38px;height:40px;text-align:center;font-family:'JetBrains Mono';font-weight:800;font-size:18px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;outline:none}
+  .score input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,90,60,.18)}
+  .score input.auto{border-color:rgba(34,197,94,.5)}
+  .score .dash{color:var(--mut);font-weight:800}
+
+  .stand{padding:6px 12px 16px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);font-weight:800;text-align:center;padding:8px 4px;border-bottom:1px solid var(--line)}
+  thead th.tn{text-align:left;padding-left:8px}
+  tbody td{padding:9px 4px;text-align:center;border-bottom:1px solid rgba(36,48,73,.5);font-variant-numeric:tabular-nums}
+  tbody td.tn{text-align:left;padding-left:8px}
+  tbody tr:last-child td{border-bottom:none}
+  .pos{font-family:'JetBrains Mono';font-weight:800;width:22px}
+  .teamcell{display:flex;align-items:center;gap:8px}
+  .teamcell .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+  td.pts{font-family:'JetBrains Mono';font-weight:800;color:var(--ink)}
+  tr.q1 td:first-child,tr.q2 td:first-child{box-shadow:inset 3px 0 0 var(--green)}
+  tr.q3 td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
+  .badge{font-size:9px;font-weight:800;letter-spacing:.4px;padding:2px 6px;border-radius:20px;text-transform:uppercase}
+  .b-green{background:rgba(34,197,94,.16);color:var(--green)}
+  .b-amber{background:rgba(232,184,75,.16);color:var(--amber)}
+
+  /* calendar */
+  .day{margin-top:18px}
+  .dhead{display:flex;align-items:baseline;gap:10px;margin:0 2px 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .dhead .dd{font-family:'Anton';font-size:18px;letter-spacing:.4px;text-transform:capitalize}
+  .dhead .dn{font-size:11px;color:var(--mut);font-weight:700}
+  .cmatch{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:8px}
+  .cmatch .ci{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;width:62px}
+  .ctag{font-size:9px;font-weight:800;letter-spacing:.4px;padding:2px 7px;border-radius:6px;text-transform:uppercase;background:var(--panel2);color:var(--mut);border:1px solid var(--line)}
+  .ctag.ko{color:var(--amber);border-color:rgba(232,184,75,.4)}
+  .ctime{font-family:'JetBrains Mono';font-size:11px;color:var(--ink);font-weight:800}
+  .cec{font-size:9px;color:var(--green);font-weight:700}
+  .cteams{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .cteam{display:flex;align-items:center;gap:8px}
+  .cteam .nm{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cteam .nm.ph{color:var(--mut);font-style:italic;font-weight:500;font-size:12px}
+  .cvenue{font-size:10px;color:var(--faint);font-weight:600;margin-top:2px}
+  .cscore{display:flex;flex-direction:column;gap:4px;flex:none}
+  .cscore .score input{height:34px;width:34px;font-size:15px}
+
+  .thirds-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px}
+  .third-row{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+  .third-row.in{border-color:rgba(34,197,94,.45);background:linear-gradient(90deg,rgba(34,197,94,.08),var(--panel))}
+  .third-row .rank{font-family:'JetBrains Mono';font-weight:800;font-size:16px;width:26px;color:var(--mut)}
+  .third-row.in .rank{color:var(--green)}
+  .third-row .nm{font-weight:700;flex:1}
+  .third-row .grp{font-size:11px;color:var(--mut);font-weight:700}
+  .third-row .st{font-family:'JetBrains Mono';font-size:12px;color:var(--mut)}
+
+  .ko-scroll{overflow-x:auto;padding:6px 2px 20px;-webkit-overflow-scrolling:touch}
+  .ko-rounds{display:flex;gap:18px;min-width:max-content;align-items:flex-start}
+  .ko-col{display:flex;flex-direction:column;gap:12px;min-width:236px}
+  .ko-col h4{font-family:'Anton';text-transform:uppercase;letter-spacing:.6px;font-size:14px;margin:2px 2px 0;color:var(--accent)}
+  .ko-col .cd{font-size:10px;color:var(--mut);font-weight:700;margin:0 2px 6px}
+  .ko-match{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px;min-width:236px}
+  .ko-side{display:flex;align-items:center;gap:8px;padding:5px 4px;border-radius:8px}
+  .ko-side .nm{flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ko-side .nm.ph{color:var(--mut);font-style:italic;font-weight:500;font-size:12px}
+  .ko-side .ski{width:34px;height:36px;text-align:center;font-family:'JetBrains Mono';font-weight:800;font-size:16px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;outline:none}
+  .ko-side .ski:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,90,60,.18)}
+  .ko-side .ski.auto{border-color:rgba(34,197,94,.5)}
+  .ko-side.win{background:rgba(34,197,94,.10)}
+  .ko-side.win .nm{color:var(--green);font-weight:800}
+  .ko-pk{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:var(--mut);font-weight:700}
+  .ko-pk button{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:7px;padding:5px;font-size:11px;font-weight:700;cursor:pointer}
+  .ko-pk button.sel{background:var(--amber);color:#160a06;border-color:transparent}
+  .mid{font-size:9px;color:var(--faint);font-weight:800;letter-spacing:.5px;text-align:center;padding-bottom:4px}
+
+  .champ{margin-top:20px;background:linear-gradient(135deg,rgba(232,184,75,.18),var(--panel));border:1px solid rgba(232,184,75,.45);border-radius:18px;padding:22px;text-align:center;box-shadow:var(--shadow)}
+  .champ .lbl{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--amber)}
+  .champ .team{font-family:'Anton';font-size:clamp(28px,7vw,46px);margin:8px 0 4px;display:flex;gap:14px;align-items:center;justify-content:center}
+  .champ .team img{width:54px;height:38px;border-radius:5px}
+  .champ.empty{opacity:.55}.champ.empty .team{color:var(--mut);font-size:20px}
+
+  footer{color:var(--faint);font-size:11px;text-align:center;margin-top:34px;line-height:1.7}
+  footer b{color:var(--mut)}
+  /* submenú de chips */
+  .submenu{display:flex;gap:6px;overflow-x:auto;padding:10px 2px 6px;margin:2px -2px 0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .submenu::-webkit-scrollbar{display:none}
+  .chip{flex:none;padding:8px 14px;border-radius:20px;background:var(--panel);border:1px solid var(--line);color:var(--mut);font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap;letter-spacing:.3px;transition:.12s}
+  .chip.active{background:linear-gradient(135deg,var(--accent),#FF8A3C);color:#160a06;border-color:transparent}
+
+  /* calendario tipo mes */
+  .cal{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:12px}
+  .calnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .calnav button{background:var(--panel2);border:1px solid var(--line);color:var(--ink);width:38px;height:38px;border-radius:10px;font-size:20px;font-weight:800;cursor:pointer;line-height:1}
+  .calnav button:disabled{opacity:.25;cursor:default}
+  .calnav .mlabel{font-family:'Anton';font-size:19px;letter-spacing:.5px;text-transform:capitalize}
+  .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .caldow{text-align:center;font-size:9px;font-weight:800;color:var(--mut);padding:2px 0 4px;letter-spacing:.3px}
+  .calday{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;font-size:14px;font-weight:700;color:#3a4358}
+  .calday.has{background:var(--panel2);color:var(--ink);cursor:pointer;border:1px solid var(--line)}
+  .calday.has:active{transform:scale(.94)}
+  .calday.today{box-shadow:inset 0 0 0 2px var(--amber)}
+  .calday.sel{background:linear-gradient(135deg,var(--accent),#FF8A3C);color:#160a06;border-color:transparent;font-weight:800}
+  .calday .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:3px}
+  .calday.sel .dot{background:#160a06}
+  .calleg{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:10.5px;color:var(--mut);font-weight:600}
+  .calleg i.lg{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:middle;margin-right:5px}
+  .calleg i.lg.today{box-shadow:inset 0 0 0 2px var(--amber)}
+  .calleg i.lg.has{background:var(--panel2);border:1px solid var(--line)}
+  .dayhead{font-family:'Anton';font-size:17px;text-transform:capitalize;margin:18px 2px 10px;color:var(--accent)}
+
+  /* eliminatorias en una sola columna */
+  .ko-list{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+  .ko-list .ko-match{min-width:0;width:100%}
+  .ko-list .mid{text-align:left;padding:0 2px 6px}
+  .ko-list .mid b{color:var(--amber)}
+
+  /* ===== COMPACTO PARA CELULAR ===== */
+  @media(max-width:560px){
+    .wrap{padding:0 10px 80px}
+    .tab{min-width:0;font-size:11px;padding:10px 4px}
+    .tab .n{display:none}
+    .stand{padding:4px 6px 12px;overflow-x:auto}
+    table{font-size:11px}
+    thead th{padding:6px 1px;font-size:8.5px}
+    tbody td{padding:7px 1px}
+    .pos{width:16px}
+    .teamcell{gap:5px}
+    .teamcell .nm{max-width:78px;font-size:11.5px}
+    .badge{display:none}
+    td.tn,thead th.tn{padding-left:4px}
+    .flag{width:20px;height:15px}
+    .fixtures{padding:6px 6px 12px}
+    .match{gap:6px;padding:7px 2px}
+    .mdate{width:34px;font-size:8px}
+    .side .nm{font-size:12px}
+    .score input{width:32px;height:36px;font-size:16px}
+    .ghead{padding:12px}
+    .cmatch{gap:8px;padding:8px}
+    .cteam .nm{font-size:12.5px}
+    .calday{font-size:12.5px;border-radius:8px}
+    .calgrid{gap:4px}
+    .calnav .mlabel{font-size:17px}
+    .ko-side .nm{font-size:12.5px}
+  }
+
+  html,body{overflow-x:hidden}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="hbar">
+    <div class="crest" aria-label="MUNDI-AL 26">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs><clipPath id="cr"><rect width="100" height="100" rx="22"/></clipPath></defs>
+        <g clip-path="url(#cr)">
+          <rect width="100" height="50" fill="#FFD100"/>
+          <rect y="50" width="100" height="25" fill="#0052A5"/>
+          <rect y="75" width="100" height="25" fill="#DA121A"/>
+        </g>
+        <circle cx="50" cy="50" r="30" fill="#0B1220" stroke="#E8B84B" stroke-width="3"/>
+        <text x="50" y="51" text-anchor="middle" dominant-baseline="central" font-family="Anton,Arial Narrow,sans-serif" font-weight="800" font-size="32" fill="#fff">26</text>
+      </svg>
+    </div>
+    <div>
+      <div class="htitle">MUNDI-AL <b>26</b></div>
+      <div class="hsub">USA · MÉXICO · CANADÁ — 11 JUN → 19 JUL · 104 PARTIDOS</div>
+    </div>
+    <div class="hactions">
+      <button class="ghost" id="btnExport">Exportar</button>
+      <button class="ghost" id="btnReset">Reiniciar</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-tab="grupos">Grupos<span class="n">72</span></div>
+    <div class="tab" data-tab="calendario">Calendario</div>
+    <div class="tab" data-tab="terceros">Terceros<span class="n">8/12</span></div>
+    <div class="tab" data-tab="eliminatorias">Eliminatorias<span class="n">32</span></div>
+  </div>
+
+  <div class="ubar">
+    <button class="sync" id="btnSync"><span class="ic">🔄</span><span class="tx">Actualizar resultados</span></button>
+    <div class="status" id="syncStatus">Resultados reales desde openfootball (se actualiza ~1 vez al día).</div>
+    <label><input type="checkbox" id="optAuto"> Actualizar al abrir</label>
+    <label><input type="checkbox" id="optOver"> Sobrescribir lo que escribí</label>
+  </div>
+
+  <section id="tab-grupos">
+    <div class="legend">
+      <span><i style="background:var(--green)"></i>Clasifica (1º y 2º)</span>
+      <span><i style="background:var(--amber)"></i>Tercero</span>
+      <span><i style="background:rgba(34,197,94,.5)"></i>Automático</span>
+    </div>
+    <div class="submenu" id="groupMenu"></div>
+    <div id="groups"></div>
+  </section>
+
+  <section id="tab-calendario" class="hidden">
+    <p class="intro">Elige un día en el calendario para ver sus partidos, con hora de la sede y <b>hora de Ecuador 🇪🇨</b>.</p>
+    <div id="calendar"></div>
+  </section>
+
+  <section id="tab-terceros" class="hidden">
+    <p class="intro">Los <b>8 mejores terceros</b> de los 12 grupos avanzan a Dieciseisavos. Completa los grupos para ver la clasificación.</p>
+    <div id="thirds" class="thirds-grid"></div>
+  </section>
+
+  <section id="tab-eliminatorias" class="hidden">
+    <p class="intro">Elige la ronda. Mete el marcador; si hay empate, define por penales y el ganador avanza solo.</p>
+    <div id="champ"></div>
+    <div class="submenu" id="koMenu"></div>
+    <div id="koList" class="ko-list"></div>
+  </section>
+
+  <footer>
+    <b>Tus datos se guardan en este navegador</b> (localStorage) — funciona offline y en GitHub Pages.<br>
+    Resultados reales: openfootball/worldcup.json (dominio público, sin API key). Actualiza aprox. 1 vez al día.<br>
+    La asignación de los 8 terceros en el cuadro usa una aproximación; cuando el dato real llega, sobrescribe los nombres.<br>
+    Hecho para DIGIWAV · Edmundo Guillén
+  </footer>
+</div>
+
+<script>
+/* ============ DATOS DEL TORNEO (calendario real openfootball) ============ */
+const DATA = {"schedule": [{"n": 1, "stage": "group", "group": "A", "date": "2026-06-11", "time": "13:00 UTC-6", "ground": "Mexico City", "t1": "México", "t2": "Sudáfrica"}, {"n": 2, "stage": "group", "group": "A", "date": "2026-06-11", "time": "20:00 UTC-6", "ground": "Guadalajara (Zapopan)", "t1": "Corea del Sur", "t2": "Chequia"}, {"n": 3, "stage": "group", "group": "A", "date": "2026-06-18", "time": "12:00 UTC-4", "ground": "Atlanta", "t1": "Chequia", "t2": "Sudáfrica"}, {"n": 4, "stage": "group", "group": "A", "date": "2026-06-18", "time": "19:00 UTC-6", "ground": "Guadalajara (Zapopan)", "t1": "México", "t2": "Corea del Sur"}, {"n": 5, "stage": "group", "group": "A", "date": "2026-06-24", "time": "19:00 UTC-6", "ground": "Mexico City", "t1": "Chequia", "t2": "México"}, {"n": 6, "stage": "group", "group": "A", "date": "2026-06-24", "time": "19:00 UTC-6", "ground": "Monterrey (Guadalupe)", "t1": "Sudáfrica", "t2": "Corea del Sur"}, {"n": 7, "stage": "group", "group": "B", "date": "2026-06-12", "time": "15:00 UTC-4", "ground": "Toronto", "t1": "Canadá", "t2": "Bosnia y Herzegovina"}, {"n": 8, "stage": "group", "group": "B", "date": "2026-06-13", "time": "12:00 UTC-7", "ground": "San Francisco Bay Area (Santa Clara)", "t1": "Catar", "t2": "Suiza"}, {"n": 9, "stage": "group", "group": "B", "date": "2026-06-18", "time": "12:00 UTC-7", "ground": "Los Angeles (Inglewood)", "t1": "Suiza", "t2": "Bosnia y Herzegovina"}, {"n": 10, "stage": "group", "group": "B", "date": "2026-06-18", "time": "15:00 UTC-7", "ground": "Vancouver", "t1": "Canadá", "t2": "Catar"}, {"n": 11, "stage": "group", "group": "B", "date": "2026-06-24", "time": "12:00 UTC-7", "ground": "Vancouver", "t1": "Suiza", "t2": "Canadá"}, {"n": 12, "stage": "group", "group": "B", "date": "2026-06-24", "time": "12:00 UTC-7", "ground": "Seattle", "t1": "Bosnia y Herzegovina", "t2": "Catar"}, {"n": 13, "stage": "group", "group": "C", "date": "2026-06-13", "time": "18:00 UTC-4", "ground": "New York/New Jersey (East Rutherford)", "t1": "Brasil", "t2": "Marruecos"}, {"n": 14, "stage": "group", "group": "C", "date": "2026-06-13", "time": "21:00 UTC-4", "ground": "Boston (Foxborough)", "t1": "Haití", "t2": "Escocia"}, {"n": 15, "stage": "group", "group": "C", "date": "2026-06-19", "time": "18:00 UTC-4", "ground": "Boston (Foxborough)", "t1": "Escocia", "t2": "Marruecos"}, {"n": 16, "stage": "group", "group": "C", "date": "2026-06-19", "time": "20:30 UTC-4", "ground": "Philadelphia", "t1": "Brasil", "t2": "Haití"}, {"n": 17, "stage": "group", "group": "C", "date": "2026-06-24", "time": "18:00 UTC-4", "ground": "Miami (Miami Gardens)", "t1": "Escocia", "t2": "Brasil"}, {"n": 18, "stage": "group", "group": "C", "date": "2026-06-24", "time": "18:00 UTC-4", "ground": "Atlanta", "t1": "Marruecos", "t2": "Haití"}, {"n": 19, "stage": "group", "group": "D", "date": "2026-06-12", "time": "18:00 UTC-7", "ground": "Los Angeles (Inglewood)", "t1": "Estados Unidos", "t2": "Paraguay"}, {"n": 20, "stage": "group", "group": "D", "date": "2026-06-13", "time": "21:00 UTC-7", "ground": "Vancouver", "t1": "Australia", "t2": "Turquía"}, {"n": 21, "stage": "group", "group": "D", "date": "2026-06-19", "time": "12:00 UTC-7", "ground": "Seattle", "t1": "Estados Unidos", "t2": "Australia"}, {"n": 22, "stage": "group", "group": "D", "date": "2026-06-19", "time": "20:00 UTC-7", "ground": "San Francisco Bay Area (Santa Clara)", "t1": "Turquía", "t2": "Paraguay"}, {"n": 23, "stage": "group", "group": "D", "date": "2026-06-25", "time": "19:00 UTC-7", "ground": "Los Angeles (Inglewood)", "t1": "Turquía", "t2": "Estados Unidos"}, {"n": 24, "stage": "group", "group": "D", "date": "2026-06-25", "time": "19:00 UTC-7", "ground": "San Francisco Bay Area (Santa Clara)", "t1": "Paraguay", "t2": "Australia"}, {"n": 25, "stage": "group", "group": "E", "date": "2026-06-14", "time": "12:00 UTC-5", "ground": "Houston", "t1": "Alemania", "t2": "Curazao"}, {"n": 26, "stage": "group", "group": "E", "date": "2026-06-14", "time": "19:00 UTC-4", "ground": "Philadelphia", "t1": "Costa de Marfil", "t2": "Ecuador"}, {"n": 27, "stage": "group", "group": "E", "date": "2026-06-20", "time": "16:00 UTC-4", "ground": "Toronto", "t1": "Alemania", "t2": "Costa de Marfil"}, {"n": 28, "stage": "group", "group": "E", "date": "2026-06-20", "time": "19:00 UTC-5", "ground": "Kansas City", "t1": "Ecuador", "t2": "Curazao"}, {"n": 29, "stage": "group", "group": "E", "date": "2026-06-25", "time": "16:00 UTC-4", "ground": "Philadelphia", "t1": "Curazao", "t2": "Costa de Marfil"}, {"n": 30, "stage": "group", "group": "E", "date": "2026-06-25", "time": "16:00 UTC-4", "ground": "New York/New Jersey (East Rutherford)", "t1": "Ecuador", "t2": "Alemania"}, {"n": 31, "stage": "group", "group": "F", "date": "2026-06-14", "time": "15:00 UTC-5", "ground": "Dallas (Arlington)", "t1": "Países Bajos", "t2": "Japón"}, {"n": 32, "stage": "group", "group": "F", "date": "2026-06-14", "time": "20:00 UTC-6", "ground": "Monterrey (Guadalupe)", "t1": "Suecia", "t2": "Túnez"}, {"n": 33, "stage": "group", "group": "F", "date": "2026-06-20", "time": "12:00 UTC-5", "ground": "Houston", "t1": "Países Bajos", "t2": "Suecia"}, {"n": 34, "stage": "group", "group": "F", "date": "2026-06-20", "time": "22:00 UTC-6", "ground": "Monterrey (Guadalupe)", "t1": "Túnez", "t2": "Japón"}, {"n": 35, "stage": "group", "group": "F", "date": "2026-06-25", "time": "18:00 UTC-5", "ground": "Dallas (Arlington)", "t1": "Japón", "t2": "Suecia"}, {"n": 36, "stage": "group", "group": "F", "date": "2026-06-25", "time": "18:00 UTC-5", "ground": "Kansas City", "t1": "Túnez", "t2": "Países Bajos"}, {"n": 37, "stage": "group", "group": "G", "date": "2026-06-15", "time": "12:00 UTC-7", "ground": "Seattle", "t1": "Bélgica", "t2": "Egipto"}, {"n": 38, "stage": "group", "group": "G", "date": "2026-06-15", "time": "18:00 UTC-7", "ground": "Los Angeles (Inglewood)", "t1": "Irán", "t2": "Nueva Zelanda"}, {"n": 39, "stage": "group", "group": "G", "date": "2026-06-21", "time": "12:00 UTC-7", "ground": "Los Angeles (Inglewood)", "t1": "Bélgica", "t2": "Irán"}, {"n": 40, "stage": "group", "group": "G", "date": "2026-06-21", "time": "18:00 UTC-7", "ground": "Vancouver", "t1": "Nueva Zelanda", "t2": "Egipto"}, {"n": 41, "stage": "group", "group": "G", "date": "2026-06-26", "time": "20:00 UTC-7", "ground": "Seattle", "t1": "Egipto", "t2": "Irán"}, {"n": 42, "stage": "group", "group": "G", "date": "2026-06-26", "time": "20:00 UTC-7", "ground": "Vancouver", "t1": "Nueva Zelanda", "t2": "Bélgica"}, {"n": 43, "stage": "group", "group": "H", "date": "2026-06-15", "time": "12:00 UTC-4", "ground": "Atlanta", "t1": "España", "t2": "Cabo Verde"}, {"n": 44, "stage": "group", "group": "H", "date": "2026-06-15", "time": "18:00 UTC-4", "ground": "Miami (Miami Gardens)", "t1": "Arabia Saudita", "t2": "Uruguay"}, {"n": 45, "stage": "group", "group": "H", "date": "2026-06-21", "time": "12:00 UTC-4", "ground": "Atlanta", "t1": "España", "t2": "Arabia Saudita"}, {"n": 46, "stage": "group", "group": "H", "date": "2026-06-21", "time": "18:00 UTC-4", "ground": "Miami (Miami Gardens)", "t1": "Uruguay", "t2": "Cabo Verde"}, {"n": 47, "stage": "group", "group": "H", "date": "2026-06-26", "time": "19:00 UTC-5", "ground": "Houston", "t1": "Cabo Verde", "t2": "Arabia Saudita"}, {"n": 48, "stage": "group", "group": "H", "date": "2026-06-26", "time": "18:00 UTC-6", "ground": "Guadalajara (Zapopan)", "t1": "Uruguay", "t2": "España"}, {"n": 49, "stage": "group", "group": "I", "date": "2026-06-16", "time": "15:00 UTC-4", "ground": "New York/New Jersey (East Rutherford)", "t1": "Francia", "t2": "Senegal"}, {"n": 50, "stage": "group", "group": "I", "date": "2026-06-16", "time": "18:00 UTC-4", "ground": "Boston (Foxborough)", "t1": "Irak", "t2": "Noruega"}, {"n": 51, "stage": "group", "group": "I", "date": "2026-06-22", "time": "17:00 UTC-4", "ground": "Philadelphia", "t1": "Francia", "t2": "Irak"}, {"n": 52, "stage": "group", "group": "I", "date": "2026-06-22", "time": "20:00 UTC-4", "ground": "New York/New Jersey (East Rutherford)", "t1": "Noruega", "t2": "Senegal"}, {"n": 53, "stage": "group", "group": "I", "date": "2026-06-26", "time": "15:00 UTC-4", "ground": "Boston (Foxborough)", "t1": "Noruega", "t2": "Francia"}, {"n": 54, "stage": "group", "group": "I", "date": "2026-06-26", "time": "15:00 UTC-4", "ground": "Toronto", "t1": "Senegal", "t2": "Irak"}, {"n": 55, "stage": "group", "group": "J", "date": "2026-06-16", "time": "20:00 UTC-5", "ground": "Kansas City", "t1": "Argentina", "t2": "Argelia"}, {"n": 56, "stage": "group", "group": "J", "date": "2026-06-16", "time": "21:00 UTC-7", "ground": "San Francisco Bay Area (Santa Clara)", "t1": "Austria", "t2": "Jordania"}, {"n": 57, "stage": "group", "group": "J", "date": "2026-06-22", "time": "12:00 UTC-5", "ground": "Dallas (Arlington)", "t1": "Argentina", "t2": "Austria"}, {"n": 58, "stage": "group", "group": "J", "date": "2026-06-22", "time": "20:00 UTC-7", "ground": "San Francisco Bay Area (Santa Clara)", "t1": "Jordania", "t2": "Argelia"}, {"n": 59, "stage": "group", "group": "J", "date": "2026-06-27", "time": "21:00 UTC-5", "ground": "Kansas City", "t1": "Argelia", "t2": "Austria"}, {"n": 60, "stage": "group", "group": "J", "date": "2026-06-27", "time": "21:00 UTC-5", "ground": "Dallas (Arlington)", "t1": "Jordania", "t2": "Argentina"}, {"n": 61, "stage": "group", "group": "K", "date": "2026-06-17", "time": "12:00 UTC-5", "ground": "Houston", "t1": "Portugal", "t2": "RD del Congo"}, {"n": 62, "stage": "group", "group": "K", "date": "2026-06-17", "time": "20:00 UTC-6", "ground": "Mexico City", "t1": "Uzbekistán", "t2": "Colombia"}, {"n": 63, "stage": "group", "group": "K", "date": "2026-06-23", "time": "12:00 UTC-5", "ground": "Houston", "t1": "Portugal", "t2": "Uzbekistán"}, {"n": 64, "stage": "group", "group": "K", "date": "2026-06-23", "time": "20:00 UTC-6", "ground": "Guadalajara (Zapopan)", "t1": "Colombia", "t2": "RD del Congo"}, {"n": 65, "stage": "group", "group": "K", "date": "2026-06-27", "time": "19:30 UTC-4", "ground": "Miami (Miami Gardens)", "t1": "Colombia", "t2": "Portugal"}, {"n": 66, "stage": "group", "group": "K", "date": "2026-06-27", "time": "19:30 UTC-4", "ground": "Atlanta", "t1": "RD del Congo", "t2": "Uzbekistán"}, {"n": 67, "stage": "group", "group": "L", "date": "2026-06-17", "time": "15:00 UTC-5", "ground": "Dallas (Arlington)", "t1": "Inglaterra", "t2": "Croacia"}, {"n": 68, "stage": "group", "group": "L", "date": "2026-06-17", "time": "19:00 UTC-4", "ground": "Toronto", "t1": "Ghana", "t2": "Panamá"}, {"n": 69, "stage": "group", "group": "L", "date": "2026-06-23", "time": "16:00 UTC-4", "ground": "Boston (Foxborough)", "t1": "Inglaterra", "t2": "Ghana"}, {"n": 70, "stage": "group", "group": "L", "date": "2026-06-23", "time": "19:00 UTC-4", "ground": "Toronto", "t1": "Panamá", "t2": "Croacia"}, {"n": 71, "stage": "group", "group": "L", "date": "2026-06-27", "time": "17:00 UTC-4", "ground": "New York/New Jersey (East Rutherford)", "t1": "Panamá", "t2": "Inglaterra"}, {"n": 72, "stage": "group", "group": "L", "date": "2026-06-27", "time": "17:00 UTC-4", "ground": "Philadelphia", "t1": "Croacia", "t2": "Ghana"}, {"n": 73, "stage": "R32", "group": null, "date": "2026-06-28", "time": "12:00 UTC-7", "ground": "Los Angeles (Inglewood)", "t1": "2A", "t2": "2B"}, {"n": 74, "stage": "R32", "group": null, "date": "2026-06-29", "time": "16:30 UTC-4", "ground": "Boston (Foxborough)", "t1": "1E", "t2": "3A/B/C/D/F"}, {"n": 75, "stage": "R32", "group": null, "date": "2026-06-29", "time": "19:00 UTC-6", "ground": "Monterrey (Guadalupe)", "t1": "1F", "t2": "2C"}, {"n": 76, "stage": "R32", "group": null, "date": "2026-06-29", "time": "12:00 UTC-5", "ground": "Houston", "t1": "1C", "t2": "2F"}, {"n": 77, "stage": "R32", "group": null, "date": "2026-06-30", "time": "17:00 UTC-4", "ground": "New York/New Jersey (East Rutherford)", "t1": "1I", "t2": "3C/D/F/G/H"}, {"n": 78, "stage": "R32", "group": null, "date": "2026-06-30", "time": "12:00 UTC-5", "ground": "Dallas (Arlington)", "t1": "2E", "t2": "2I"}, {"n": 79, "stage": "R32", "group": null, "date": "2026-06-30", "time": "19:00 UTC-6", "ground": "Mexico City", "t1": "1A", "t2": "3C/E/F/H/I"}, {"n": 80, "stage": "R32", "group": null, "date": "2026-07-01", "time": "12:00 UTC-4", "ground": "Atlanta", "t1": "1L", "t2": "3E/H/I/J/K"}, {"n": 81, "stage": "R32", "group": null, "date": "2026-07-01", "time": "17:00 UTC-7", "ground": "San Francisco Bay Area (Santa Clara)", "t1": "1D", "t2": "3B/E/F/I/J"}, {"n": 82, "stage": "R32", "group": null, "date": "2026-07-01", "time": "13:00 UTC-7", "ground": "Seattle", "t1": "1G", "t2": "3A/E/H/I/J"}, {"n": 83, "stage": "R32", "group": null, "date": "2026-07-02", "time": "19:00 UTC-4", "ground": "Toronto", "t1": "2K", "t2": "2L"}, {"n": 84, "stage": "R32", "group": null, "date": "2026-07-02", "time": "12:00 UTC-7", "ground": "Los Angeles (Inglewood)", "t1": "1H", "t2": "2J"}, {"n": 85, "stage": "R32", "group": null, "date": "2026-07-02", "time": "20:00 UTC-7", "ground": "Vancouver", "t1": "1B", "t2": "3E/F/G/I/J"}, {"n": 86, "stage": "R32", "group": null, "date": "2026-07-03", "time": "18:00 UTC-4", "ground": "Miami (Miami Gardens)", "t1": "1J", "t2": "2H"}, {"n": 87, "stage": "R32", "group": null, "date": "2026-07-03", "time": "20:30 UTC-5", "ground": "Kansas City", "t1": "1K", "t2": "3D/E/I/J/L"}, {"n": 88, "stage": "R32", "group": null, "date": "2026-07-03", "time": "13:00 UTC-5", "ground": "Dallas (Arlington)", "t1": "2D", "t2": "2G"}, {"n": 89, "stage": "R16", "group": null, "date": "2026-07-04", "time": "17:00 UTC-4", "ground": "Philadelphia", "t1": "W74", "t2": "W77"}, {"n": 90, "stage": "R16", "group": null, "date": "2026-07-04", "time": "12:00 UTC-5", "ground": "Houston", "t1": "W73", "t2": "W75"}, {"n": 91, "stage": "R16", "group": null, "date": "2026-07-05", "time": "16:00 UTC-4", "ground": "New York/New Jersey (East Rutherford)", "t1": "W76", "t2": "W78"}, {"n": 92, "stage": "R16", "group": null, "date": "2026-07-05", "time": "18:00 UTC-6", "ground": "Mexico City", "t1": "W79", "t2": "W80"}, {"n": 93, "stage": "R16", "group": null, "date": "2026-07-06", "time": "14:00 UTC-5", "ground": "Dallas (Arlington)", "t1": "W83", "t2": "W84"}, {"n": 94, "stage": "R16", "group": null, "date": "2026-07-06", "time": "17:00 UTC-7", "ground": "Seattle", "t1": "W81", "t2": "W82"}, {"n": 95, "stage": "R16", "group": null, "date": "2026-07-07", "time": "12:00 UTC-4", "ground": "Atlanta", "t1": "W86", "t2": "W88"}, {"n": 96, "stage": "R16", "group": null, "date": "2026-07-07", "time": "13:00 UTC-7", "ground": "Vancouver", "t1": "W85", "t2": "W87"}, {"n": 97, "stage": "QF", "group": null, "date": "2026-07-09", "time": "16:00 UTC-4", "ground": "Boston (Foxborough)", "t1": "W89", "t2": "W90"}, {"n": 98, "stage": "QF", "group": null, "date": "2026-07-10", "time": "12:00 UTC-7", "ground": "Los Angeles (Inglewood)", "t1": "W93", "t2": "W94"}, {"n": 99, "stage": "QF", "group": null, "date": "2026-07-11", "time": "17:00 UTC-4", "ground": "Miami (Miami Gardens)", "t1": "W91", "t2": "W92"}, {"n": 100, "stage": "QF", "group": null, "date": "2026-07-11", "time": "20:00 UTC-5", "ground": "Kansas City", "t1": "W95", "t2": "W96"}, {"n": 101, "stage": "SF", "group": null, "date": "2026-07-14", "time": "14:00 UTC-5", "ground": "Dallas (Arlington)", "t1": "W97", "t2": "W98"}, {"n": 102, "stage": "SF", "group": null, "date": "2026-07-15", "time": "15:00 UTC-4", "ground": "Atlanta", "t1": "W99", "t2": "W100"}, {"n": 103, "stage": "TP", "group": null, "date": "2026-07-18", "time": "17:00 UTC-4", "ground": "Miami (Miami Gardens)", "t1": "L101", "t2": "L102"}, {"n": 104, "stage": "F", "group": null, "date": "2026-07-19", "time": "15:00 UTC-4", "ground": "New York/New Jersey (East Rutherford)", "t1": "W101", "t2": "W102"}], "groups": {"A": ["México", "Sudáfrica", "Corea del Sur", "Chequia"], "B": ["Canadá", "Bosnia y Herzegovina", "Catar", "Suiza"], "C": ["Brasil", "Marruecos", "Haití", "Escocia"], "D": ["Estados Unidos", "Paraguay", "Australia", "Turquía"], "E": ["Alemania", "Curazao", "Costa de Marfil", "Ecuador"], "F": ["Países Bajos", "Japón", "Suecia", "Túnez"], "G": ["Bélgica", "Egipto", "Irán", "Nueva Zelanda"], "H": ["España", "Cabo Verde", "Arabia Saudita", "Uruguay"], "I": ["Francia", "Senegal", "Irak", "Noruega"], "J": ["Argentina", "Argelia", "Austria", "Jordania"], "K": ["Portugal", "RD del Congo", "Uzbekistán", "Colombia"], "L": ["Inglaterra", "Croacia", "Ghana", "Panamá"]}, "en2es": {"Algeria": "Argelia", "Argentina": "Argentina", "Australia": "Australia", "Austria": "Austria", "Belgium": "Bélgica", "Bosnia & Herzegovina": "Bosnia y Herzegovina", "Brazil": "Brasil", "Canada": "Canadá", "Cape Verde": "Cabo Verde", "Colombia": "Colombia", "Croatia": "Croacia", "Curaçao": "Curazao", "Czech Republic": "Chequia", "DR Congo": "RD del Congo", "Ecuador": "Ecuador", "Egypt": "Egipto", "England": "Inglaterra", "France": "Francia", "Germany": "Alemania", "Ghana": "Ghana", "Haiti": "Haití", "Iran": "Irán", "Iraq": "Irak", "Ivory Coast": "Costa de Marfil", "Japan": "Japón", "Jordan": "Jordania", "Mexico": "México", "Morocco": "Marruecos", "Netherlands": "Países Bajos", "New Zealand": "Nueva Zelanda", "Norway": "Noruega", "Panama": "Panamá", "Paraguay": "Paraguay", "Portugal": "Portugal", "Qatar": "Catar", "Saudi Arabia": "Arabia Saudita", "Scotland": "Escocia", "Senegal": "Senegal", "South Africa": "Sudáfrica", "South Korea": "Corea del Sur", "Spain": "España", "Sweden": "Suecia", "Switzerland": "Suiza", "Tunisia": "Túnez", "Turkey": "Turquía", "USA": "Estados Unidos", "Uruguay": "Uruguay", "Uzbekistan": "Uzbekistán"}};
+const SCHEDULE = DATA.schedule;
+const GROUPS = DATA.groups;
+const EN2ES = DATA.en2es;
+const FLAGS = {"M\u00e9xico": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAABmJLR0QA/wD/AP+gvaeTAAAByklEQVRYhe2Vu09TYRiHn/a0gD1gi1QKJmiUAgV0IBguA5dKgsZEkZAAf4IhYXN1dUYX4+qG0UljwuCFgdgQgRBCsBJtTbmJ1HKK9HJqT93Y63tUEs+zv7/3ye9L3s/G7asFiuTB2ERosv9mVzEzeuRLaLV9sKgZAHuxA38bS1CKJSjFEpRiCUoxVTCyPMurR3fZ/LBkWqbDjJCvO2Hii6+Jxz7z8f08z6af0n99mNE798TZpjRYMA7xeBMY+QypQgk2DEIvnxB+91acLRbUDyLEYutsH5wjGl1na1/nQp2PsooSXjy+LxYUPfFaeI7zqhunQ0FVltnYy+Mud3CivpP2ai/JpMbq2htam4O/vUPUoN34wVIsw3wcftLItRtD5OxVhFcW2P22S+/wOIaelKyQNZgrOKk8lQbdzcNNg4WtBCNXmjhZ5sOunCGdiZLK5UWCogYvtgTJZjXaamqovNTNVJOGpoEvMEBHoJpsJkXn5Vv/ThBs+P09eJQ9+hIz7KjNdPkbcX56TpVLIdAyIF4hvoOqy02DP8jZug6S3/cxUmnKa72oLo80GjDpUAOUlqqcrlXNijvi//qL/wSWoBRLUIolKOXYC/4CxCaIEsQc6/0AAAAASUVORK5CYII=", "Sud\u00e1frica": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAABmJLR0QA/wD/AP+gvaeTAAAExUlEQVRYhc2Ya0xTZxzGn39bpPTCkWIHYhERaMGwcVEuBZ2KA5foXBYX5rKRoUtQnKJbZobTbGZqXKYGTZYZNt0l0yxmX/ywGW/LIEIBuahTCWhBBJyhrW251Lb09Jx9IDWEDQ6uLdvz8eQ9//M7z/s/7/u8h1C5mscEzZYqhi5uOngzO1a3DADcbddGLPt2K7wW88ShQZcYSxP3TbzoYkdDTzZfiOu2PWpZl6IXh8RoVMr1G5yc3U6jHe2imQSkf3JwvFSy8MHasi/upEYtyAMAV3PjgOXTj6I4u21GAMWUn7gLhFmTDXB63NITjb/E2lzDhpe1S2Qh82LVyuK3Btn+3lFPtzE02IB075ymL69FZzGzknShwXOVKouhvKprQURUDgC4b7b1mCt3xnGDdgoaIH9RzfM8+D33Y+oOPYjOBCAXuml73rqG46+UJxMoAixrfbx/r9Nx+fy8oABWVyhrytZIcwBIO59Iu/WtuiEbKxZ0cx4zx9RQXvUgllFnAcBoR3u7aefmJG5oMCSggADxyRpJb/0xxqZSUhoH4nbc1dR9+VCdA2DKHiMifFZY0rhnxZupRKSA12ux7N9rf3Lp18SAAgKAiMAd36qo27ZOmg1Aen1E1rW8Lck97BUvEiqSGBnTbyivsqjlTDoAeIz3bgxs26jlhoZkAQP0KSNB0lV7lHErw2gRyxNb1jm//rtHkXpg8i8dAIiIP1hUWrd7xRtjfez1/mn+ZJfJ+fsVwXZ5JkAAkIjBfr0jvH7j6lm5AEJbh8OMK9p07AgnShYqqJ2j6Wsor7KqZMo0f8CmBPQpMzHEWHM43KOUUcooL/K83R7X8rMpIguAZKqiYpHIe+r1D66WpBe8QER+7TxTAgLj3QzVA/yspkH53VU3kuDgRFp/HhwwQJ8WJ4XcqzkczirCKMXFkWv9rYSm89bwpQDE/wtA4O9uXrEqb6+9lSB3c6L4YAH61R8iAsBj2i/4b/QsU2ysORLOKqSU7OHIVXxnYd05C7MS//UUT5zWayPyuwVtWt7hJV0wwaYFOH6Z8XDkKemIu3Z2QJUNYMr9VkTkrX5tx9VNS4qeJyK/HJ7+Qn1d5xnxilKECiapNb2GzUdtc+RMcBbqtIWSvtojjIORU/K4rS4XwsGBP1hUWle5vDiTiOQcxw+8+96F3u9P384KCKCIwB0oldfv3hC2GIDsxkhY14tt2mmFhQRV9MOGrcdNajmTAQDGLltDzsrTKVaba7Y/cE8BdRpJn+EYY/XFrcquuTWHe6NzAQimkY9Xbqg/UPhOGhEpOI43lVVc6jn1wx/Z/oI9BTxRoazdskaaBSCs84n0vr5Va7exkgyhG2OYSFNjeVVPLPNcNjDmWm7BmeTHVmdEoOCACZH/857oTJ6eLfJzHG/e+v7l7upvb+YEEswnidEZ2p/XqjObPZJlEDj6RCsjzIYtVd3xqmg9MOZa/ktndCaLMyhwAEBUWTTMgxRCAyvyXzUcW7tFR6BIjuMt2z/8zfjVN9dzgwXmk0QITiVT2scO7vH5wJhrSwt/0g6YHUGHAwTCQknGqmbTnrPu1Kj4fJ7H4KEjTVeT0k/qB8yOyJmAAyZJxhN/Hj185GjWF/w4v69/eNlMgfn0FwU8AORxW0hDAAAAAElFTkSuQmCC", "Corea del Sur": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAFF0lEQVRIicWXbUxTVxjHb3tLbykykTKhHcoYhRnkpQJlYgATcS/MNCSOly+QIKjZ4iKbIDABeSm2JXGLS1BJLAxHwc7A2ggMGTRjWQvsxVaKVFYaXrJhWSwwV0vv7b20+3BNA7e1VOfi/1PPc3/n+Z/n9Jw895IcDgfwMkR+Ka6ejDEM++/ZPSRxbwzDcGJiUm9vr91ufz5Lu90uk8mSk99CEOQZjM+frzWZTGazef/+FJvN9qyuCIJwuckIghiNxoYGvnvI4aKxsTEQpEgkktDQXaWlZUePftDe3u6KPU1isTg3N+/06ZLdu8OuX79OofjodDpXjFgxgiDFxccLCgqGhxV+fn5sdkR/f39SUpL35aakpNy6dSsuLhaCIKVS1dfXK5F0wjC8RcVlZWeZTFZHRweZDN68eXPHjkCRSERg0OWVldvDS60dS60dK4MKdPVvAsDn8xmMoMHBQRCkdHV1hYQwq6qqCQxp4z0eHx9PTU1rbRXX1JzPy8szGAxGo1GlUoIgiAOoaXnxi+bV2wrH+rpzFsnHh8F7j1XyESVgOx7BMGxoaGh6enp+fqGnp0coFBQVFY+OqrhcrnPWpq2GIKimpnpk5Ec6nc5mRwwMDLS1tTpd//n516kjuSv93290BQDAgaKmb3vv5xbCs/N4hEKhhIeHV1Z+Fhsb4+vrq1SqKisrqVTqxlmbKsZ3vqqqOjEx4cSJkxUV5RUVFXjcPLswk50PrHu6XdSQnXu+aXfW3djYeOnSl1evXtFqJ/n8BgIM1tXVbVoIiZSRkeFwOEwmU1NTE5n8ZEu+/lDIerjgwRUAgPXHlnWzefvBVHx44MCBqSlddnZ2bm6OK0ys2K0eLK/98k72buzRliSJ6hOn6AVf8d+SpGxJAAAwrDEyHOtuH/0EhY3QwmwkkIs8OGKdAW2o+Td1wKGDL8Z4dsl8nxaWY5kixL/axmn2T8Z/f+cb2ecb2bw6gPyx6E1Ob7tTsz93ymfnxoh4W4LTFdcdiCXxiwNIJG8SelVxBNP/MYlazOBlWX9PQf5EAbLcb884NdSVHKGFNYayXphxBocJkkmoHeymR3fToz2QGJnin5TgTU73W63X64uLjzu7KYtBz0l73Zt06bsg55FGUfTYsSKDweCtcUNDg1arlclkFy9edAY/P5m0M4Dm2TU0iM5vyncORSJRX1+fRqMRCASu8KZ7fO/ePblcPjc3r1Qqz5z5tKTkE7X6TnT0k71VG5bfr1H8tWp9muvtC2/vDQvAhzqdbt++hCtXLguFosOHDzOZITk5Oc5UxIotFktdXX16eprVatXrZ3g8Xn5+AYqi+NMENkNzmZd/6A0KuOnc+lDIRe9Gqi/znK4Yhi0uLgoEgrt3JzAMS0tLbWy8YLFYNq2U0K3Oni1nMllyuVwikSgUisBAhlAoJDBLK2tdP8wKpFqBVCsdmXv4CCYA9fX1QUGvqtVqqVQqk8mCg0Oqq2sIDNEYhuG9e2NOnfq4tLQsKurNlpYWCKJNTk46vNbExASVCrW1tbHZkefOVY2NjdfW1lqtVgJGPFwQBInF11paWjic+LW1Nb1+JjMzc3R01O3/6lYqlSorK0ujuYuiaFRUZHp6emFhIY3mcjDdrrq8vILFeq2zszM+nuO62C1lsVhiYmJv3LgRHBzi+u6By72x1WqNjY3r7u7GMOxZXXFhGCaVSjmcfTBMPAG4ntoWbTYb4Z3hOeQhiVf9+P/QS/t2+hfPXOvIoRPQcQAAAABJRU5ErkJggg==", "Chequia": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAA7ElEQVRIib3PPQrCQBCG4YEIUVEwrZ2InaAHEIScwnukFU9iqYfYAwTsYh2QFCHaKASroAEtFhICS7J/M181zfDwwm5/ejzfP/I5mbs8s2gy7q8XUyCcM5hvi0/JLvE1vm9Ws9HQpYP5dctelOk1DACU6Q2YjyZdAANJuhjmQ01vgwEzvQPmw0iXggEhXRbms5iuBoO9dGWYzzxdEwbj9J6eWu3LWHI85GVBB3tlEaShnyd675qwnydBGnrqofqwYagmbB6qDNsKVYMthsrC1kOlYIzQDhgvtA1GDRXDBKECmCa0AVOG1jBxaLU/23E5ryjAurYAAAAASUVORK5CYII=", "Bosnia y Herzegovina": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAABmJLR0QA/wD/AP+gvaeTAAAEYElEQVRYhcXWXUxTdxzG8e9pT9lpATO1gCIIQ52KQJYsQiTqCmliRSYYxoyXcjGjhDKQRO/cBRK9WQIuJorxJdEbtpjMqiANGBQGuIyXJW4M4wtVYGBYGeXY93YXnYxsTFIo5bk5Lzk955PnnPz7E+CCv6AgmWvXdEiSksTEG7x+7SA6WoXN5iY74ylN39QRrXEQzui+OE5bz4d+BcDKlRGkpX2LTmciPX0VANXV21EoBH74eQN7y4zY3khhBQpCYCsCXL06CMDwsMyhQxs5ceIjSko24/H4sFimuXRJZG+ZkcZz4W9SMfvA74fGxpfk5sYTFaXi4MENtLWNIsseOvqXp0nFv09YrU7Gx+3cuWPBbvfS3z8BQErKimVB/gcIgVeen9/EgQPNxMaqUatFamuzAcKOnBPY0jIMwODgJKWl2zCZ9mAwJNDQoKekZDMd/RvIM5aFBTkn8G1cLh9nzvSh1UqIogKHw8uVK78B0N63kTxjGdNv3ls+IIDX68fl8lFV1YUkKfH7ITpaRWZmLO19G9lrNC4pUpzvAo1GJCfHhCx7SEiIBCA/P4nMzBgePRqfQTbW1RGlcYYcOG+DVqsTWfbMHJvN+7h8+RNKS7cxMPA5O3bELWmT8wJn59UrmeJiM6IooFIpqKjopLNzDEH4+5ssD/03GRQQYPfutZw+3cuePXfZsuV9APbvTyY+XsPD3k0hRyrh06+C+cGzZzZaW0d4+nSKyUkXSUlRGI1pJCREYrO5eT68iqaOZIr1PxGh8i4Ydu12Ni9GVwffoNvtm9m3Wp1UV2+nsDCZU6c+prw8nelpd0ibDBo4O2Njds6f/4WpKRdOp5eqqi5k2cOKFREhQy4KCKDVSqSnf0dOzm0yMgKjWk1NYFR72LuJfV+WIdsXjpx3HZwvb/9ZLJbpmVHt8OHNOBxeLJZp6utF8srLuFt7jkh18Ovkohucnaaml+j169BoRIqLU2htHcFu9/CgJ/C6F9JkSIFWq5OJCQe3bg3hcHh5/PgPAJKTo3nQs4kDVUexO1XLBxQEuHDhVwoK7lFUZEarlZAkJXV1gVHN3L2VgsrSoJAhBfr9cP/+CABPnvyJ0ZiGyWQgL289DQ16jhzZGjQypMDZcTq9nD3bT2ysGqVSwOXyUV8/AATX5JIBAVwuLx6Pj5MnHyFJSnw+PxqNSFZWLOburRQePzYvctHLzLsSGalCpzNhs7lJTIxCEMBgSESnW0t39zjNXakUHj/G91+fR4pwz3mPJW3QanViswUe7PP5aW7ex/XrORw9msrg4EF27lxDc1cqBZXHcLjmbnJJgbMzPCxTVGRGFBWIooLKyk7a239HoRDeiQwbEGDXrjXU1PRiMPwzqhUVfUBMjPS/yKDHrcVkaMhGS0tgVLNanSQlRVFRkU5cnAZZdjM4pKXtx3V8pu/hRmMWL0ZXhxfo9fpn9iVJycWLu9HrE8jNjUetFrl58zkDz7X0DqxHtkfwcmwVfwFIR9jc34H9rQAAAABJRU5ErkJggg==", "Canad\u00e1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAABmJLR0QA/wD/AP+gvaeTAAACUUlEQVRYhe2W30tTYRjHP+fMOZdTcbZWpiVlSSsJIaIogyjIbrzxpqigFrtZYEp01Z9QGGG/SJpBXthNFBRBF0FZi0FXgYQ3wXCKNTdT94ud7ZzuxB/pzrtzVhf5vXs4z/N8P+c953nfVxrdu02jgFz+3o8uf8/RQnkiit7tG4k+vNNeKE8207QUWgc0qv8MUCs4b8IyFTB6/zb5uVkzW5oHmItNExt8RHxo0KyWgAmAiU/vSX4eYXrgHmomTfzpYzJj3/jZf8sMPsqMNpCs5YS9Zxbi/Pwc37s6qDpxymhrwMAKarkcWjZLRcuePz63e1oBUDPpYi2AIgDn371FmYgQHwowceMalqpqrJvrV+RVeFpJhoKEvWfJz8RJfQmRHQ8LAwp/4tnXLxnv9i3EP9xubDuaUaYml+Rpap7IVR9qIsFYexsAzW8+CAMKr6Dj2PElcezJAIngSuPxK17URGIhttTWUd64vbSAajpFMhQUNgHQMmnSo1+F6/QBSkgAsn0Dds8+kMVny7a7Bat7i3CdsJPzvJeGvgdItgrdNdWnO2kKDFO20SVqV9w2U32yg6bAMJZa59qJkoTL30PDzX6hF1qsovdB+/42NnVfXzPHtnMXLn/vKs6SLh9DJ4lss1F30Ye1vhHr1gZ+PX+G89wllMkIyuQE+ZkYqHmQLUV7GAKs6eyiZlE8++oFlQcOgny4cLGq72pm7n1QyaKmjB1ty2UqoKYoqKmkmS3NBXReuIzscOh0/gtDslyVh47oT/4n/2AJtA5oVOuAqzvrm+LfxFemtEWr1lUAAAAASUVORK5CYII=", "Catar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAA0UlEQVRIie2UTQuCQBBANfr/Vw/dE/oB3YKWDcp1l8oiiCDcxcowiqgkNLND0EHIL0aS2Hce9sEw+9Q4jpXvnMWWYyowsxEJLreUyaKo6eIPURBuzBnVdLtvgIibmRP+4eSMJgKzdW94dT0Qa7Z41UWs1XHHi+cjglK+ybXq0L/v2JxjJgZ0by1BxA2QV0pQ41X73tExpuDHVeQ7EYtquo0IiDhj1dUF5GfHVWzVptbmyAQR5yhXNcdV4++kyHLBIMuVQJZLlqs8slwJZLn+oFwvhnJF2AJRDTsAAAAASUVORK5CYII=", "Suiza": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAAnklEQVRIiWP8zzAwgGmA7B21mH6AhRxNfn4MQkII7rt3DJs2kWzIfzLQhQv/kcGFC2QYMvLieNRiugFGAmW1nx9DUxO6oJoaAycngvv9O8OtW+hq6urw5zFC+VhIiEFfn4AaTk4sapAzOjYw8uJ40JbV794xXLyILkhM4nr3joDJo2X1qMXDzmKymj51dehNH9IBoUqCZmDkxfHIsxgAlhiCxzp+emUAAAAASUVORK5CYII=", "Brasil": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAFU0lEQVRIicVXa2xTZRh+z6WXc9bb1nUt67ps7Rh1XWfZENjGNKjIRQMY5I/8MMYbP8SEBGNCIgQ1KD8UNEiURCTGmKAS0EU0RpQwmJONjU13ZVda1nW9305P23PO549uZeu6uQGR5885ffO9z3O+7719xYynNsCDAP5AVO9JWEZyNMH/38INGv8P9R3n6zrq1P67YyByt5mW5KAg+f3m4bfMI3KSV4i4rYVuk5xp8ariwtL2sDTh9Rrf56u6V+cFZxrLZMyzhS5nTDoYpe+/cL4kebhy4I3lt3LILHGlSWGjzmNRRlp9yihPLIYQW0w5bdJ6DloGlSIOAMIx6nxTw+UbVcPOwigjVStDVuPI5rUtjz7chWEoxBEfDpR+b9ehexTWU+why1A6g35tW/XB17uCkZy5K63G4fde+aJI4waANp/y7e6yMYZagHneo8YAdhomjtt6jTImZTnz+/p3T7/AJsRZ10/6c3+5tmadtStPESmk4s8ZXDzCOoNyBNgShIvp2Ce2vl3FThE+dWbt/eX7T76KUHaWFNiEuKXHsr3hCknwJIZq1YH6/EBnQOFLiP5bmMDRSyW3j9r6i2k2bUQIv+o5aauX1NUrbFbVijKVWklFIgLDchl0oWiOVJysLr+Z+qmTJnYaJihCuO5X8LM/epawWR49Ud2zrXCSwGYlx8D4uon4ZpYVeOBFFKfRc9s2lO54xlBY5TfqVRRGe/wsz0+53JoseP7Ji9i0Co5BdW7oiQJvT0jmikvSnGTqIcGFl42O14x2EsuSj00diqu93oHREBufqiWS9FnKVasf0ZisgeU1yZp+/bdnJr2BOAC4fHl2d0FxgWsmw3I5882arrMO7ZGBUoYjpna8UhX6rKZno9aDzxPBxubaKze0HC+kLYKAXO5Ye6e/6SIrx/MM5vjjT1FyMrd/MAQADdYuQ4E7gwTDwKKMbNF5hqKUPUbhAKCWJGVkZrQyfASE0PRZ1FVrUi8iEhcQ+vFn55FDnksXhKrHovv2FclzRBg2bw6KcCTG0dSOh6P0WYeOIoRKZSSry+DtotY+c5GO5nghySG7kwGAHIqsXKEKhBNJDgHA0DDT3S5Y13JPb9Ia6XMKOpBBggAaxwv2dFT0hXMgnVwJAW/y5Lb4VDZVOFeczPARi7gov9MbSPgCcW2+NMpwAEBThNcfJwgsnpgKgYwmu9uFh3TqtWXHMhgcjHTvDfPpMT07PUtmjZR2v2JHs+3ToeIkmmWvLB2xO1rtzqg2XzrpnSqzYDip19LB8J2vZGI8GxfC7vcB7mSogLDv7LrtzStbfKqZnJl1zCOs1af8w6WuUEa00kTaXqYfb2yuDUd5AKhdqXFMMADg8ccBQCkXSSVEDi1apqHE+NDBF78ipy8IN8P06x0VZxzLMnaSRTgFb0J0blwbTIpqVKFU89Ll+dTy0JW/rQBYSjUNs0k54Y5p8iT+wPjxvR+rFSEA4BB2arRoX+cKJyudyz+vMAAghHUF5RdcGpMsZqBZAKgoGSsvtrf1mWPTfYCmiCSHPP44xyOzYeDonmNFGg8AdAblu69bfnJqhHkaNSx+LB6oGFSJOQBgWGljc+3lzqpBR1EiKVLKIpWm4S1r/qqr7AYAVsBPDBZ/OarnF+zqixUGALUk+Wb5yNbCyQXWtPmUB7rLRhechmks9gYS44nfJtX/hOSrckOyOZeQMEcc7jMd7jUFklkG0T0JpzDGUGdvazNazSV33u52y7XZ1XKfhWG61fzpVdlUYYTgnd6yjwZKohy5JBJYfIznQoILUlwILl0yhbt0A4C4gC/1Lj0TD+y/078L9lE0hyXY8wAAAABJRU5ErkJggg==", "Hait\u00ed": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAABVUlEQVRIiWNkUJjPMBCAaUBsHbV41OJRi0ctpgSwkKS6v9bMTF+EgYHhy6/Pb9+9/Pblm6ycIg8bLwMDw6mLbwqbT9HKYh11AStjMQYGhmmHtp59c4aFmen3b+MMywQGBoZvP/6QZBRpFjMwMDD8//ftw6NoFVcFXlYWRi5zEdPv7x9xCsiQagzJFv/5/mbV3B03fvE0Rv1lZPnVsHi3GsvP2Jxgki2+9GEq8aoVf2ud2ff13EdOsXfXX6+48vcXE/8L3XPCylr7r1twcZJkFGmp+s+Xz8oGAur/JlvIr338jf3ZTxZL+ZVq/6Yq6fP/+fKZJKNIC+rtrw9tWHfh9a+/wj+5zT8fY/jDdIZT7PXvv2e2tsYKGojRzuLTD67xSorJ62v///X3lTQTEzOT9O8/4rJ//v77u/nK5WRSjGK8JGBCkt3UAiOvyBy1eNTiUYuHvsUACO56R+vftYYAAAAASUVORK5CYII=", "Marruecos": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAA9UlEQVRIie3WMUoDURAG4H/eWyO7EkhcsRAiNm6KILmBRQpvkAOkyhWSg6SRQK5hJ7udsMWmSaEWJgEJiDZZMexu3uQKvgfyCt9fz8zHwBRDcfsGNiKsqA52sIP/Obz2aeWTBTgOKQltwGlDpA3zdk+r+vmEHs8EgIqwOSYAkyvpMQD0PtV1zn8FR9/8FvDsUrZ+uP+uADw1ae3TYLXXUrVhAHcfqrPlYffo9qtixqIu7+flxU5PNYEB1BhRrmYtj5ijXNWUtgqz40pOxTIQ45dq9LpfBiIJpcEQk40LgWlWNEsAmGbFw7kJTO71cbCDHezg3+YAfsZItZkLTTsAAAAASUVORK5CYII=", "Escocia": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAACNElEQVRIiWP8//8/Awx8//2vYOWtWYeeMVAbxFlKTItS52ZnhoswIlsMAYtPvMhcevPrz79UsZKTlWlCuFqanRSaOBaLGRgYrj3/GjrjyrXnXym0VUuSe3WGjpYkN6YU49VnX7BKfP35N2f5rQXHnpNta4KV5JRINeTghYNrz78yz//uKsrLZizPiybHxsIUYCCqLMq569q733+xhAoewMnKNDVKvdlfiY2FCVN28YkXAdMuMzKk7mXAFvlwcOPFt7CZVy4//UKkrRoSXKvSdXSleTClkBMvM4NxPAMDw8UnX9adf22vJiDOx4amWoSHNcFa8vWXX2cffiZoa5ylxMZsPRlBDqwecJ9wYfuVtxAu1GIGBoY3X34vOPYca7CzMjP66ongD3ZI8LYE4Axe/6mXnrz/CReBBjWaq0kNdiKDFxkgfAwHpAY78cFLwGIGooOdhYmRpOBFBliCGhngz4sMDAxklwEELGbAG39YAZHZD3tQIwM8wY4J8AcvaRYzMDD8+fd/y6U3D9/+cNUUwhqdDAwMX3/+TV9ys37TfSKLOeymYAX/sFUnCIOYGNlYGIk3jSgf4y8cIICYQgYZDNbElWAluSELe+Fw7fnX119+i/JiKWTiLCWeffx14TE+u3FaTEzVNvPgU7KrVOxBTVLZS16VisXHpJa95FWpKBaTWrXBARlVKiKoyajaMAHxwQ71MXlVGyYgPtiZOS0Sya7asAIig33AmrcD16AfFF0YenbaAAtN0/+Hwte5AAAAAElFTkSuQmCC", "Australia": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAEs0lEQVRIib1We0xTVxz+zr2X9SGsaAuFYBHB8QyPVlEyQBgBnWFu6gTKxmSTQcwWQUMT2jBxi5nOjC1kgOERskAWh3ZsZh3OiJBIQJZIBQZmIBsEVsLKDItMwULL3R8gdnLblUf25eTenN/5fuc7r9/5HcIeOYLy8oGx2bQ0XU/PnwAAqNW7zonaodEAQEHB+Y2H1OrWhabISA9dNiP9IA8nTxINg9WCwtQUduwImBnt6HgzJyfMDpUQaPLlP0XfkX6kglbLFqhXrQqAynw+x/R+HuLiBFXllRVJDQ2vubrylvMkEkHzl1FnO4qonm50dk5FRKWl6dYkXFd3N7ycN1jZgNJSHDx4KF7c3Z3p7e1iTZLJXPrPS17KP4DYWDQ1dRogl9dqtQP2u2YYyp4wgIGBybB3+iqza0DTkMu3GHpzcsKtSenek+LCE7h8mT33yRflPdHRXw8NPbCvGhwszsoKDQ2VeHk5cw+LZVVW1biFH/1vEomJxvg4AALk5ipycxWLdlJsS3j7dmlFRZLJZPHxqeIkUODzucupU4uU4mKbHBtwcqKk0g0si9HRqagoT04OYW15OwCCT201OTs7JSZuEQqdLl785X8V/k9QmJnhLmfOLFJUKpuclYDHo5OTfYVCJx6PBkARQRkRlFHCshPqW3P0cxgZQVQU29YO5smtRNMsj4/bt+HvD42m+LNOxrl8wWtFwseOhdfUvNzVdUQmc8FCOLm5Ca9efb2kJMHp++8QF/coNaPW4GHtc+lS/x8vKNDbi7Ex1bd5t2ojrYOEpgmPR8fHywixqcrnM9u2bXR3F4rFfLlcCoCOj89qakqRB4mQn4+qqr6Pa2KLZzw9NyTyf0dzMwDExDSafDMzf4zY5e2nzoZA4KXKzi7a28N6Dg7+BWDrVtH16ylKZeD0tFmvN3IKm83zN28aRCJeW9tYWVkXAObGjVT6Xj/2prLhEZ+nV6jfvmM2zy/3nJiY3rfvm9OnXywsfIsKDXVRKhujowmCAYSESGQyl02b+L6+rgxDcboDePzYfPx4M0UtLgtFf1WH3bsfvvte8uQB1YedttwAWCxsUVF7YqJ23MMfej0slgW7TvdbaemdCxe6NZpWO+7z8+zSFwDBGkJiCUu7y3JFZ0KCd0vL6DNGe/e442DZxbIcKSkBzc2pcrn7M/b1mbEdSKXCzZtd+vsnHz2as7bbe0JIJAI+nzEY/l6LsNE4bTROL7fbW2qlMlCpDFyLqh1wzHj/fr+YGK/6+v6MjGA+n7l2bTglJaCry3jlyq/rKMyxxxRFOjre2LnzaTrr67uvUNTNzdkMlVWAY6nn51mt9p61pa7u7ipUFQrpQj7gBA3ssa67uwurqvbk5++wNiYl+fj6ilpbDTMzZgdVjx4NPXs29vBhf73eODHhwOGanbWUlOjT0nTDw4uvqpGRqYyMxurqn2na0aBnGCokRBwW5hYZ6REUJObk2IzjoaHsoaEHhMDHR+TnV+2g5NN+CbTaV8fGHubltXAPzpZbb+99pVJHCKmvf2WlqgAIIenpPyylBA4C54xpmjAMZTJZAAgEjMlkWbrc1wvcM7ZYWMuT5OP4gVoR1idJrAL/ANQqu8LikxKsAAAAAElFTkSuQmCC", "Paraguay": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAABEUlEQVRIie3VMUvEMBQH8Pei12Btm97QyeqmwjkIugj3Bf0Yjq63uDq4ilTkKGhxKNWlKn2kWAy9xM09h6WgeeOD/H8hCXm4PNqDMYqNojrYwQ7+EzAaY0aBN9dYI6UkIsZY3/eMMSFEGIaDw0TUdV1RFJxzpZTneQCgtRZCWOVY37GUMs/zi9X1ApfJbOdWP2dZJqW0zbGGEZE+6ebj4fzkdCbkU/sqpvEaD8X6qBFxgpPAbAFuGzAvX2+0Iq21dY7tZquqKsvyauP+7v3xONw/iHfn/ND3/TRNh4WJSCmVJMlPp65rznkURcPCANC2bdM0jDEA0FrHcRwEgW3IaB8IwtnlKPD/GxIOdrCDf62+AbRTcGh7Vi5FAAAAAElFTkSuQmCC", "Turqu\u00eda": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAACbklEQVRIie2WXWhSYRjHn/ec857j1EzTqcRasNmWtllbtNItu4uKoKhBFo2ii+i6i+6C6KLYRR9EwmhsRIMRBMGowMAgF0XUaAyCRmKjaaNIXR2/j+ejC8Nu3PEowmD5XD2H98fz+18878tBEbUFVqOIVbE2xA3xmhRTylFm34DmzElmr5u0mKU8x4e/5PyB1Mi48P1HDWKk5AEhdDrD6J2mwweKn0J0KffipRD5hnTrsMOenXqaHp+ovxhptebAFO7eBgBSOvPr0uX0xEMQhBKA7Z24x5mZfFRn8Yaxu2rvIABImezPg8e4mdkyU2hMddgKHz8pF1dYLtzlUJ84Xux/X7lW1goAElcQFqMAQFrMqkP76yBWDx4BhABATCbTYw9kSJFNEkYD0Njgu0GYjEjFMJ5+xNA1inGPs9hwb99Lubw8jChM2dpJc7N52r8xMo+7HVKeWwmucJ0Ivb7YiInlChG3dhhGbtO7egGA2rwp++x5yjcqN1l+nBiL/+WaTfJkYf5z/NS5xNkLAAA8z3jcZGtL7eLSNjF7+pBGXSFlJsuHF/hQeKnNmTh9nul3ycAVrhO1pd06EwSKAgD26jA7fGslkjAZxVgc2zslnudDYfmIAEBexFqZYzGxTFjM9M4dAEC7dxfefeAXvpaJr9VQVosYi4uxeMVtUCQGgHzwFTPgolpbEEk2DR4FQSjMzgHPlwDa1cf0bs9Pv1Hi+5dVyVuNVIz+5nXNkBcIAgBEls0HXwuLUbReR9naUr572cdPqrIqFRcLO7s0Q17G4yatFonj+FA45w+k70+KLFuttTpxfev/+wNpiNe++A9IV9ajIi5GJwAAAABJRU5ErkJggg==", "Estados Unidos": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAEoUlEQVRIicWVbWxTdRTGz31r19exrd3WbutWx4C5sTkUQTbnQKYYnAQZk5fUMGaCTlBwvpEgmAFR5hYYEhQWcEEGQjIN2VDJIAgoSFVGGGNhAzrbrV1fb++9fbtt771+aKLGT7Yx9vl0vjznlyf//zkH0ZQbxGIiHI4KggAAYjHBshEA+Dd1zJiPhnfJXBCnUADY2Ph8Q10VAOAY1r696dGy6QCglEuPdLyZpU4DgPzczMNtG6USMQBUzSvZ/Z4BRZG/GxMQoik36HLUHMcTBD5hdel1WV7an6qU3jPZ5swuHB4152lVUw5Sr8seGhmfrtcwvpBUIrY7ybRUOYahHMcrReip91fGC8YBwDzpBIAdLWtGRs2n+34kcKztg8ZPj/TdGLqfqpR17tywpvmToZHx6vmlDS9UvbHtEM8LjS8tzkhXtn/2NQCkFxeoFsxPJLGhfuGEzX3p2hCOYZua6voHjGMmq0Im2dRU19VzzuGicjUZhvpF+7rOhNhwycz8RZVlB77oFwRh7Ys1Eza3zTTR8/qSRBKPmayBICuXSWgmMDJmidUUE7BYXV7ar5BLKDpgstgDQVapkAaC7PBdMwgglYhjxpDdPrKnI5HEAIAgyJ5t667fuNt79qpYTBzb/9buzlO37oyr0pVfHmgxbOxweegFjxVvMCx5pWV/JMo1rqrN0WTs2vsVAOhFwh5tOBHw3EeKnG7aS/swFC0v0d+8bUJRBAGY/XDBbzfvyeWSQJCtmP3QrTvjPC9gGFo6K//m8ANBEIr0WqebVsgl5062xgtGAWBmYW7pLB3DBN0kM69iZp5WRXp9JOWvX1opIDDlIFNSRHW1j7tJhqL9RXptWXEB6fUxTDBmjBf5V2IAQBCk5dXlxsHRyz/fFonwne8aunq+v2eypU9TbG9Z3dpx0uNlSmflr1pW/WH7iSjHLV08N0+r+vzYdwBQKMP2liniBeMAkKWa5mX8A5cGGX9Ql6M2Tzr7B4xeyq/LUU/a3OcvD1K0X5ejdpNM/3ljlON0OeqxB9Zxiz1m5EIBengiEfDLDU87Xd7u0xdQFDn4UfPx3otXrg9LJeLuzi1NWzr7B37R67Lbd6xf/Vqbze55tmbOM09VvN16VBCEd5pXOF3eqxeN+fWL4wUjmnIDjmEAsHZFza07pqGR3wkCX7+69ux546TNnaqQrV1R09P7g5f2F+gya6srjp4Y4Hh+3pwZ2uyMb769BgDFM/IS+Fw4ABAEFmIjVruH43mxmPAHQhTtD4YiIhFBUj4BgKR8KSmiaJRzuik2EpFJU9hw1OHyRjkOAPhwOGC2JJJ466aVFqvreO9FAscOftzc1XPOODiqVEi7921p3npwykEW5GW1bVu3bvO+QJBdWFm2/LknNm8/zPNCrEUBFkngOiGackOmKhUAHC4KALTZ6cFgmKR8AFCk15qtTpaNyKQp6ozUcYsdADLSFASBTznIP1skCB766Ua8nn9IJMJzM6fFDY7d//9f+P1DR5ICRi48GfcI/ifClSXFSQEn7Y3RpFABALmyrCEpYDzs8SQFjEyc6UsOOGkLxGP8NSngpC2QpI3TH5rkKBduZoxLAAAAAElFTkSuQmCC", "Curazao": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAABK0lEQVRIiWNk0K5nGAjANCC2olvMzsbCzck2ABbbGcs7mCrQx2IWCMXGytyW7+znqP7/P4OKnND8Dec/fflJU4uhPv71+++ExSdU5YV5udkmLT1Ba1sZ4D5mYGDQVBKNrVj36etPCRHe568/MzAwMDExsjAz/fr9l7YW7z5+F03OWEuKl5tt38n7tLAYX3bytFXxtFWlha0MDAzMDGIOmKJpocbHlqa4WChZGchGeukwMzFduf3q9x9qhjl2i89ee/7tx293axUGBgb7+PlbDt6irq0MyHGMBvTVJXYcufP+03dPW9Vrd19T11Z8Fq/eeXXLwVsMDAwSIjxUt5WBgYFxZFcSoxbTErAYqVI/qxADGH++EBkQi0dgHPesMBoQi0dLrlGLRy2mGgAANP9SYBGQG8oAAAAASUVORK5CYII=", "Ecuador": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAFD0lEQVRIieWXW0wUVxjH/+fMZXd2l71FYFeQReUioECRpooabbFobCvRJrVJY0z6Rps+tGkoKaZJ0zQaE32orfahWhNLvTSlNaZptRekVqmhFISCsIIgFxd2gb3A7jCzc+mDbd/KYLDxod/bzPny/+WX78zJGaKP45EUfTTYRwhmH6g7EcZgG8JjWLsLgv2vl3dawQtIWwleeIAospAZKzK6LuFOCyYGwBDoOjg7LB67aM6u3N7Z9T1G2kEIUldg+RMo2ALB8TDAUyM4VwdNAqXQNFAKSqBpUHi74swyh/6ADg3QVFAGlIXZhsKtKN8Fll8ceE5ZLselaP893o5YCAE/ogFMDkKOQdPhzkJWCdLzEAui9FnoCch8pg7OzA4u1ljTTYFodc83159+aVTToeugBJPDaDoOlsOKcpRWQ9UQmYNbwI9nMgt3VHgcFyiR5o812FxiMs/MDbrN552mpee/8hSsHw/NIMuBeBRppYiHQK0AICq43ItgX9oGXnWZzxPCick8gfPPk2z4OWn+n3bLMqtTevCTTScPesQ4SByqY+/chkZhdwObs24mBug4ddb+wcXlLE/lJPtDQxUh6qKMzeydW35Xr+R93BdUIWy8MC0/5ghse9Uvblo2UStY0O44KiWOdpxo5nvDkxmjUfPU1Zb04OiEiTGYsYExIZrHPgmVOdVp0VW+N1vO960clQrTTGJwbu2YVOWkYz2JqtIljEtXJS7R0C0oc2y6fYoQbVHGAKBCTCz99OM33NbWPR4SchyoyN2sSMmoe2tfOGUGYATormtPTp9ucnKXW+ora89xesAw1fjITKpsNJbSf7dsX//VcJnJW7beZTWlum0FGbY17piLhJcw4Tn3c+leS93P5rsja2OzFlVhDGONjRUwssQAaqU8HHeYJTk0Hg6yxKRCdFpNVovCUWFE9ugu8xZpDNDFOCVYAJisPjLfuk4P7bsoJHUAFLp3LnHFfgJJt3SvHFQRMm6anNMAEkFLxcyUCAro6pTWSTN2FtVg3jEbGRPNkRGWZz0AEcGZB2USESKzqiAWs9Q6dkNJzQ2zrgHbZEwehAQeICYva7GE5qcuAAxMRqy5nmmABpBquTZm6hznlr7IEWtiqFVwrJFHBSWg5/RV8cMYQCpAPGlTPSM2w1jjzRWctpUV9QH6Tazih1HY02CWx5PJGW2g2Xyplhxb57x+LO27NqqjA6sI0cqKbk9MG4ONjbsGvCt94bKi9jPdO3fhCncosm5JfYe30bTtbQC23sbVQ3v1RshgzmFn+Zr27MxIV7/3IRj/1uOTZPpWTcMtU+GHe2ubsjf2nw6VRItzgyVFoZzc8ef9XwpDWmoN9neSkrqazySZ/t7rewjGsUTKheb8F565MRQ4PhYtbSnYUIJ4+9caRzgGRNOKuRz9Zv4O1yx3pPjA7u2tn39bNCNaDWPJa5ZqwyYuZ+bl+jZrmtLaUdh1WfYu01KkyEAkk1Cywj4coY7QBH2qOphTFA6PCiffL1MG7IaZxA/n/B2i3cYnREZRAXRDLcmH86Dy0S977h2WFFDfm8wrFV9E6thbfuSCAaCyjGwRhNjsYsH/VD/ULDA8cJapfEd9/QDqVbD78e57zOE9alMSGISat4Az634t9Hob9GVkEub+LSqsWrLQvQltm3HDh+6wagXAAVmECfoyFhi4IGP9fuvfjyrQjMx1uA3gV+RuxijzL52LBf8X9f/7hfkTFUAfcg78kPMAAAAASUVORK5CYII=", "Alemania": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAAOklEQVRIie3QAQkAMAwDwWTMv7J66kwUAuu/gYO3ZCU6ERUYGPgL2B2C960GBgYe66oy8L7VwMDAYz3yvAIJ5QEI1AAAAABJRU5ErkJggg==", "Costa de Marfil": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAABmJLR0QA/wD/AP+gvaeTAAAAXElEQVRYhe3OsQ2AMBAEwYfcLRC4B0Qr1OaOECm5RRtOTA2vlYh28tPtMlvMyDrfO8q2ZyZ99Ks+9cherdnB3wykDKQMpAykDKQMpAykDKQMpAykDKQMpAykDKQ+mXAKCHXvhBQAAAAASUVORK5CYII=", "Jap\u00f3n": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAABq0lEQVRIie2WP04CQRTG38IuBCkwxEUUYxijCcQLaAk9fy5ALBTwCgrYsJEzsKExXADkAFhyAQyJxiFEDCFIpEAiuzgWxD8FZmYXkAK/cvLm/TKZme97HCEEFiHDQqj/4L8Ur2MPUUf9Gn5rtgHA7HJYPYjjjfMFv9416plcp1hWur2vRcFuWwv50PmJZXebvRXH+p0IwekslmSiqJMbCTxKxVEyBhw3OzAh1aNkK1+iFjojgf0riYXN9LhwOstCBYBWvoQlmaWSfuLBw2PFG3ofKiztAIAT+INqYWWPct/0E2NJZqcCAFHUeiZHLaOAiTrqXN+wU8fqFMtEHU0F7tew8vyiFax0e/0ango8fGprpY41thf9YMZPqWMfBWzaEPWBTZuOqcBW746wtqqVKthtVg+aCswZDWLQpxUshv3U2GAwENyseIKaDOTwtkANDLqBWJDLnYwxUgEAXZyyxBSTV6NkzBkJsFQ6IwGUiLJUaolFScbp7G+xaDAJ7lQcJaIzjcVPDe4b+HLCICCG/e6z4/kMAj/0PfoQYt5a1zf66AHPRMs33i4f+APyPq2hfSRbXgAAAABJRU5ErkJggg==", "Pa\u00edses Bajos": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAAQklEQVRIiWNcJ6PBMBCAaUBsHbV41OJRi4eFxYz///8fEItHXlCPWjxq8ajFVAOMim7dA2LxyAvqUYtHLR61mGoAAMFzBRv0G5BTAAAAAElFTkSuQmCC", "Suecia": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAARklEQVRIiWNkCJrMgBf8q8xFE2FqJ6CFGMBEuRGjFo9aPGrxqMUjxWLGf6cHxuKRF9SjFtMNMI62QEYtHrV41OJRiwe9xQAtrQnN9YJQjwAAAABJRU5ErkJggg==", "T\u00fanez": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAC0ElEQVRIie2WbUhTURjH/+feee9mbr5Ox/BlzYjCykpBMWzCkpYUSmEQFoESBFER+SnMPpUJRWWUHwKjIDNCwwysPqQFFUElvdgLzZfMtdKpbXNuu957Tx8m2jdvMhHK59s5POf3O+fwPIdDnIjHQgSzINZF8aJ4PkM1hzVsuokvLGDTUkCp2PtVeNghDQzOr5hNN+ku1PBFm0DIzKwsB5rbvEeqJIdTOYoof0C4/NzYtkYSrZMGvwdutohvuwGosjI1u3YwSXp5yDVmK53sehdmMWtOS3jdQaJ1vjOXxqtO0qDAGBLV27eyqcnykCsiP1ddUiT/GHKttcg/h8Mpjr17g9+22Xf2sreyGoCmYrfu4mmwDOE4AHTCD1kmUUv8Vxvd5YfCJmbNaXr7S8nhdC3LpkGBKyyIe3AbhPhq6zQVZUzCDIEKwrBxlTwyOitTUTvx1o0gJNB0hwYFAFHVlaHikhxO994Dvto6z/6jVBAAEI7jLHlKmIqqmjWlAhC7PwEAIVxOlvjhc6C5LdjaLg0MCk+ex796FLpzAOzSVCVMRSemlIaUU0NJJjotExMNngMAUUQg8Ee2EqQysdTTDyAiMyO0i8mnL9hkY+TBfbzNqi4t1p4/NdHQGLpqAOKXHiVMZcWVbNT3d8kjY8Pm9dQ3wW3IietshUrlO1cfWV5GonXTmdQfGDKspB7v7MxKRM6aRD1e1YrlEblZbJI+ePe+9M0hvv/IFRbwljyi0QCQR0YhSYTn/PUNwdb2WYFQ3seMITGhq5MxJPqvNXkOH6NuD9FpeZuVNaVQj5cv3sLbrJK9z5VtpW5POMUAVGsy4tpvMUaD/MsdbLk3+aabsKxq3Wp1SRHRRkn2vlFbaagawiwGwOjjtTXH1Xt2TjcPADrh91+57j1Rq/CscxFP6WNjOEseazZBlkV7r/D4GfWO/y1kLuKwxP/39VkU//vi32HEGnNYMRZTAAAAAElFTkSuQmCC", "B\u00e9lgica": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAABmJLR0QA/wD/AP+gvaeTAAAAXklEQVRYhe3OMQ2AUBTF0PvZmJhYmRCBTYxgAAPfA0oIA2h4acLUszdpS9qbousc+7oMW6V5jqnf+1xqkmSoBn9zkHKQcpBykHKQcpBykHKQcpBykHKQcpBykHKQ+gAR1Ah2RkDd2QAAAABJRU5ErkJggg==", "Egipto": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAABNUlEQVRIie3VO07DQBAG4Jm1YxvHBAVjMAjRIEBCShFoKLgEFYfgPNyAY7hCVBQ0pqFDKERGJHGUh2NnH0NHv1asSODptvj/T6PVavGlfQrrGLYWtYZruIb/BIxEVC6ZvD1sBhfN7fNy8TIbK7EAgK3wipnO77FyeDaM014kipQvvkU+EMU47UWzYazbY+oGisl7P76fD15t75AUH31Ek/7jQefO8zvVwpLPCYgXY2SoRC55RkBSZLo9+rDIENC0vNb+tVJ8+vmEgIrPdXu075hkzgzHC7rL7Evkqbd3yQxbybxyGEjtHN/YbiiKVOSjhuMHJ7dEUrdG+x0vs2SaPCviyCwABsQNZjd3u5YbavVob2y54Ub7rOH4CBIZIbOs1pGuCgAIgLqZlcz/+yRquIZreGXzA3N+fLCbxV/BAAAAAElFTkSuQmCC", "Ir\u00e1n": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAADHElEQVRIie2WzW4TVxTH77lz79zxeIxdlzix2yQKJUZFLPjaoKpSgQ1s8IoXYM+6L4DEnheokBArnoAlQpFYEFaVoqqRgLSMie1xJh7Pnblfp7uUetWpGiG1+S+OdI7O+f90dM/iwjc//UA+h+hnoZ6AT8D/STD7rneVUWasSlW2VGsrp2ssOCxnSEjIa4yyXEvjTMgCAkCBGquHcrwWfVXakgBVtrTORTxER0IRTORUWd0SDebxtJwRgg1etwQpocbpfTlejXqFLQEoO3NqNeSBciaeDzn1Mz3/vnc1zsc7k1/btdZavfsuizl4SXmw2dqwaJU1ARMNv6GcOPvFelbKt4d7EQ855WdaaxOZ/DzZXap9+XVj+d0spgCZytdP9RBRORPyIGCBb/1v22eJQ5driYhzlR/FhTTX0jr7adHN5/L39/L9W6fUp53GWWmKo1Sawvx1EBFLo7TVgIhVn0ft7NDTp9NHj4Cx5v37dn/fP3euqknl40oePCi3t3E6xaJweW5Ho3J7O3n48HjBxatXNkmKrS2+uQmMAaV+v19sbdnhsHz9+hjB8uXL8MYNMxoRQghjhFJCiPn4Mbx5U754UcmKVeqmzSZwbuMYjQHPQwDU2sYxYYw2m5Wsqh2XiePZ48dOSrayYpMEtfaWluxoBEI0793zlpf/vlW1jVm361+4IC5ejO/e9ft91Dp//rz77Fn55k0lKiGEYHWZ8fjw6dPdlZXdbnf25ImJ439gQtA5m2WIaGezo7iQuvkcrV0o6g8f9N7e4qAxLs//HMxzNGbRrSicUvDbYOCmU1qvu8nE6/VcmgLnwJidTr3lZZemwBgaQ4UgQeDSFILADodsfR3LErMMosilqdfpuDSl9brTGg8OvG7XpSkBQGNovQ5CuOmURpEZDtnqKkqJUno/Xr9eu3YNPA98HxgDIeqDAXEOECGKGoOBTRLW6TilxPnz4tIl8DwAoK0W9f3w9m1AJIxR3xf9vrhyBQBclrF2O7pzx47HrNMBzvnGhrh8mXgeUEqjiAoR3roFv1Q7iX9N/7+PwAn4BHxs+gNCsZHpOm+9ZwAAAABJRU5ErkJggg==", "Nueva Zelanda": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAADp0lEQVRIiWO8k1Gt0FN15+XniNy5F68/YWBgYGBgqMhwz2F7+7hxIgMDg1RB0jJxzcquDRApUz35hcFa35r7JLJipac+YCAXMP39/PWKY6Ts1w/H1pamRdrgUcrIyFiR4rRSm+l7+yTVBT2S+Ylk28rAwMDUJmEglBJ5zTvx44JVM1oi10xPE+DjxFQnIsizrTM05uDm75dv6hxY/l9POyJ3LkUWL1p30m3VTZZJbS9nLb8VU+hnpnh+a7WslCCyIlkpwWNFdiLl9bxWRhrrZ118+dXIp231tnMUWczAwHDz3kuryvVHU7MYmZku24ULPXmUFoUS5j5iLJ+a+lXnd8vU5U1efNAmpPfeozeU2MrAwMD4//9/rBLPJsyDJy7Z+nzsmlXr8BhtYSh74vxjnBafEjfBKvH/79//f/4yMDAwMjMxsrBgVWPG64lVnIuDNdVNJZnp4Xp2xeVnXt64iyV4mP79/IUVQWxlYGD4//cfLjW4fPPtx+8/P3/+27rdhentrftvsarB7hXKwb1vDFOcksQYef/9e4FVAePf7z+wSjyfsvBJ61QGBgbJ3HiZqmysaph1W4l3CgsL058//+BcJhatQhatQlbtouLuTX9ZWH49fn7VNfbzifPweGVkZmZkZ/96/upFE7/HTZN65uxl1y2G6CLeVgYGhp5EIyYmRoTFDAwMokI8W+dl99eGft62/5pPElegxwbU1LByy5mvKip6x9b+ev7Ka82ivZ1h0hICaOZ6WCkKC3BhtZKRkbEzxcRpzYxdJaZ8POxQix0s1M5vrXYzV35Y0fm4ZfKf9lrXDfdv3nuJrPPh03cGXq37Lj1Wnd8tkRHNU1F/KNXYy0EHrqA0XLf9/6UtHlxu1kqYFv///3/dmRf3whO23//+6ctPqMW7F+cJfnx7xSnq97uPO6OTbcrXPniCJR2+evvZK3Fq8+RtQmE+6mumf5q2cBIXItXM2nab7fkz7revdx+7j9XTJy88CZhxpXf1ZbgI0/tVW655JfLGh+b/ka6YuOPP339YdTIwMPz9+6++f4tr7MRPEpI6B1b8R1LJzclaJOnRw6GHqzjCBIwMKrVEKqUuYBoQW0ctHiYWR3ho4ZFlZhCyp7qV0uJ8mS7yOd8uKVlo/uHmfvD0I6Yamvj46ctPchx//+zZ5/rh3qnL2GsnWlWLD/5zMyQU83Ewff12GasCWhUgTExM//79g5DYFdDCVgYGBoh9uGylocUEwajFdAMAeSSYxJdkVZsAAAAASUVORK5CYII=", "Cabo Verde": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAABmJLR0QA/wD/AP+gvaeTAAACzklEQVRYhe2X3W8MURiHnzMz207ZWmVTi6qPqAZpgoQL0hQXgkSISBPuRLhwQQSRSPgD/AE+Ii4lrnDjimQJN0iUVhNV2qJVTatd2901Y2fO66JIfMXMTn0k+lxNMvM755l3znlPRtmpw0XA4h/F+NsCv2JCMCoTglGZEIzK/yNYWfFhvIb6inE5QWqrR9m1voOnfVXcbpvFYKZiPIYFIlRwe+NzlBq7Lrgx9mxuZ+/mx2TzZQAkEw4r6gYjC5pWfPXJsKKbVvVw+kCa+jkZ0g9rKLgx2runc68jRcerKmqSOS4cuUFzUyf3nqQYGJlUsqClFEokXKjlWTWX7yzkycsq8k4MgOsPar/c7x2K87hnGtOnOLR1J0uWA1DxmqPieTpwoDzmU/QNtFYYhqC1+uFzZZaPr8c+jGVq3KJZmuBIphCsflJE6Szl2fO4if2IMSXYBHqUstxFvIq1+NZ8UOXhDCUo2hXp2S3SMlkkmw4ck0KbyKOUSOdGES8bPPcJ5bS3CtoP9DKGvgXKR1iKqBkBS+Bg6puIMtBqQ7jqAaq7aZnIBzd08E8Rug8qK+SWB6ykV3LHVd7ggBCkz4gPkscYPYeu3AdGItgE7l3U6Fmw6tCVe8AMujQ+zxt8l4j0nRB5YIsMXwoRK4q0N4i82B96g4iIqKvXWsX3g/XBavs+Jg4FP8W7Yl2gjKkcYiqPabjkvVnhqgeoqXOPieN6oYPJhEMmV4bn/3xxzagqRDrmoMSlW18zwvFd9zm0o4XZyRwwdsJ8xo55bFvTxZmDaRobXkcT1FqCn3Of6HqToLGhj9VL+nn9Ns5ku8jO9R2srB/Ajnk4RYt5qSzrlvfSPxytgspOHX4P2GFCpiEsrh3GMITWriQLZr7j+qkr9A7G2XpyC5lcOQ3zh+gfjmPHPHqH4n9W8FssU9Pc1IkWxaX0oihDfce4CP5O/vmfpo8cbx2B/2PzEgAAAABJRU5ErkJggg==", "Arabia Saudita": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAADVklEQVRIie2VW0iTYRjH3++47dvXTul0I2yTTOd5FR0WFlkZRGF0wEqKiLqSogtvIjqAQRFEVDfVZURWFIVEZzrigUwt0+aca659bk43p9v8tu/cRQfs4EwigvJ/+/55frzP83+fF9Jvs4K/IfivUKfAU+A/KTTJmc0yD0jSNIIMhAcJOdFgf7VzRYWr39Pj7y1fUEYzcaMurXeAarC3GLSpgiS6/B5SQZAKEgZQF9VDKpTh2Mikwanq6XEmfrBib7fPbdDqaSYejAwhMKwl1ReqjtdcPV1szqOC/o221VkGU5OjrbTQFoqGW10d20s39IcHByNDhTNztp3aN3mwSreswMbyfLE5t8XVMRwbyTKYqJB/x/JN77zOzSXlClymwOXXG+5UlKx19L0PjARhCNZrUjAES7BMF9WTpk5J0s5xZ+z0uT2DfYIovHS+oYJ+GSZr7+3yBvsftD0PRcK3Xz260XhXQ6rb3XYCVzzraFIpSFJOELj8xM1zNstcjVINQUm4AFEWGX56IEriomyrZ4DSKNXbSzfkZ2TPn10EAJhtzMQx/OnbxvW21YUmy5UXdSkq3fysIkEUWZ7r/NBdaLZE6ViZtcThc7e5OliemxwYgiB3wFucmdfsfJ1gmU5v98XHNxodrYst894HvLtWbik25Y7Q0YXZc3zhABXyK+UEy7N3Wp4QMkWaJlWOyyAANTpaaSY+uVbPMpiMurRlBYv2rNkxjSBRGBll4rXVZ+tePrTlzO30Ot947OfuXTpcezLBMtfr7zIcF42P1lRWVy5dF4qGa5/XxRI0y7Pj1R8XbNDqM9NnIjAcjAwLgtDtc5dZlwxFh3ev2nro8sl6e7MkgS7KlZ+R87i9/nzVsWv1t63mvFtN949ePTMUHVYRZIpKG6Fj49WHkn+LEAShCMp9mROKIKIoiZI41oOjOALDcTaBISgn8AAABIaNuvS+UP93zrFKtkAAAJIkcWPSwQvCj56v/fxEBQAIougN+pJX/v929T8BzkzP+HXzBOECAMgwfP/GqiJz7miCxlGMFwUMQVEY4cXPQeMEHkPQ0QSdZTRTIT/H8wcunfAM9P0umOHYI7WnfuUSlUvXq5WkST9DQ6g8YALwBO/4z+mfCNcUeAr8jT4C0At6Mb+I6/YAAAAASUVORK5CYII=", "Espa\u00f1a": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAB6klEQVRIie3WO2/TUBQH8HOvrx0/iVM3qUtMAyqyhKgK4SExMMGAiBAFVYwMfAPEUPGNQG0HZhYEE23FRMVAVaXvWFGal+3Y8ZMvYBCSa3nxWe/wu/+je+69aL1ahzwK56IWcAFnWeT6q3EuMBp9ycX9v1b3XMELqYuFyT/WgogxbN51GGOizHHngJEkBCp/njl82BUHm2GHiml6aB34SCOC5ssticVmVnAcwaRPXav1zxbEcOp6GEEN06Y3r7hU7A0dkLlsYNvEux3UZJEWAhmgeFKSXqwwFW9udjo822wb6N5SgFEqOPlwMRKrLq/FDj7eKXFNNzrAiFuBnw+Peqvl2qUrd9+mVOFviXu7bHf/t2XyIcf0VZX2p4AjDDzNsXvrxGL22CapLARp4OTEoQvyk5fKUlCKfee7+EFvfdr46GgmZR+VF6nK41Zgpb3ykhNTIbK/bZVu8GHDJcZxfdJQnLHzdc0cSXfeoO7nrdrNOCWcvHFBj+XVp4TEAAAIHtV/LFd+WSINDkWXYeb1MyyHmcB9QszTdx6DgBIAgFR0IlS5XkCrMyeDaHzy3hPTzlNyq41xtT26ev+ye+v5qN2+7S8+YOJIOdzR9O3tjn5qN8R5Z1aw08C5PRJkf0PKBUbF97aAC/ii6g8Ym7Fafiy3zAAAAABJRU5ErkJggg==", "Uruguay": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAACZklEQVRIiWP8//8/w0AApgGxFYvFP358+/D+LQMDw/kzexkYGO7duUIji1ngrH///jExMT17eP7Vs/PmDtl3Lq3k5fzx5vVjJRWdv3//MjMzQ5QdOPdq6to71LSYiYlpxYJ6D9+Ue6fLL57gFuO+/fL2AjnN6KvnNrz/+NvGMRSi7MHzr2v2PabcYmhQ//nzh4GBwcs/bdfyQH4hyW/PFjL/ucH558ij2zvuXFxiZOb24PYpyi1DBoyQVP3owc0TezpkxP6wcfB8f7malZWdk+3Hh698rCx/2IWcXr98LKFVoW/sysjISK2gZoRnpz9/fp87POHPiykMDP9fvPxkbch64eYfFnZpNl5lBcNGWUUDyi3DYvH5M3uvnlkmzn2b9f89Yd4fEqJMr9/9U5JhPnPt948/Qt/+qXxjNHDyyhUTl6ayxQwMDH///rmwv5j50+oXr38ryf6/cfevjhrT/VcqwryvfnAEqRtnCoqqUMtWhMXPnz06srNHXVng/evbrL9Pfv3GwMv56d9/th+//gup1wjwi127+dQrsICBgWHB1vuJLVRIaNBULSklF5o4iZnH6NevX2xCPhzckj/+iLFx8AspF188uV5UzhliKxUBouT6+/fv+4+/XSPXfv/2Vlyn7iejkohm07tXV0JT1167fIK6tjIgFyDMzMw2jqF//vx5+l7WVtv90rlDCpqhV64/4+LmN7X0gitzNBZb1WpFucWMuGqnVy+fiolLQ8pRyq0hwWJaA5bV1Ch4yQCMDBYrBsTiQdMQoBsYsMQ1AoM6pOrowFg84rITS4iT7IBYPJqd6AYAmFALLS7xtlQAAAAASUVORK5CYII=", "Francia": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAABmJLR0QA/wD/AP+gvaeTAAAAX0lEQVRYhe3OMQ2AUBTF0AsGMPFF4AYHrOggTDj6HhDBgADQ8NKEqWdv0iHZ3xRd19Jbm+ZK8xxnv9et1CTJWA3+5iDlIOUg5SDlIOUg5SDlIOUg5SDlIOUg5SDlIPUB5uwKK8EtjEYAAAAASUVORK5CYII=", "Irak": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAABS0lEQVRIiWM8J6jGMBCAaUBsHbV41OJRi4eFxYz///8fEIuHVFBvvXkcwlh5eR88wP78+3vpxd2nn17vvH3qy6/v1Le4ad+Cf///QdhbbhxjZGSEsJ99evP889uOg0s33zjKyMBI0BwWkmyt3j3bUlbbR8Nq5+1TMvyicFsZGBiuvrq/9eZxYqwk1uKzT2/K8IuuvnLAVl7vxuuHfOxcV1/dv/rqwb9//5iYmH79/c3GzLrg3PZlF3eri8gxMjIy/Gf4/e8PQWMJp+rtt04ELa1hZGT8/vsnsriHmvmnH1/lBMSXh9cbT005//z2////lYWkPdXM9987fyV/IaUWLz6/k4edU4CDV15AHFmci5Xj7/+/DAwM0nyiTz+9/vnnNwMDAyszCycr+6cfX5WEpCi1mEZg4EouBqLTIXXBkCq5Ri0etXjU4sFlMQAyzYEg9kuHnAAAAABJRU5ErkJggg==", "Noruega": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAAwklEQVRIiWN8q2nJgBfwLZzKYmqo4Fjx8NlbBgYGeSnhB/s7/pw+/yk+G79G/ICJEs2jFo9aPGrxqMUDAlj4Fk7Fr4JZQxWrIEGNBCxmMTUkQxsjLw95GhEmyDuUE6Pu6cv3f/7+Y2BgYGFmkhYXpMRKqMUMaimUm0IGGLjEJS8lTIw66gf1////iVGH1hCg3GKWP6fP41fBrKHKyMuDJvj/85e/N25TZDHBFgyk6YMm+PfG7dGmz6jFoxaPWjziLAYAvWQ4vXEr+GoAAAAASUVORK5CYII=", "Senegal": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAABmJLR0QA/wD/AP+gvaeTAAABmklEQVRYhe2WvUsCYRzHv3fp3dGZmFlgUURKU00RuEQQDS2BY4RLWxRUSDQE/QO2REtLFE3tvUBCFNRyjYFx1WJpmFkpaC+nl9oQGHEOnc+TDd5nuvs9z+/7fOCe53gY0d9dhE7OF8OSq0n16OmJrkK6noWuHgBg9TZUG0OQFEOQFEOQlNoSfM2yCD+baUbSFQzKIvZCFpqRdAV3QhYEZZFmJEy0grIfDIKyCEVlkFZYWIUCldyKBeU4h8sHvvR+leCQUb4+yMqxHb2t2dJYm02FE0p1BbscKjYkG9ZObZqxwKG99DzofsOm7x5ZzazfUfEe5E1FLHsTWB+Po57T3tgYBvAPJbE7eYeWhnyly5DvwbG+NARzEb4t54/60sgTFoaTpPF0TnEoxmlqcpwvM1M/VAT3LyzgTUUEvI/YnojBKhQQlEWoeYY4m1gwkjIjo7A4mI5iaiCF0Z4XnMxF0N6o4uxG+H9BNc9Amr9Ff8f3b8TdnMPRTBSmOtJ0CofE5ciVrYtcAZ7Od9L4GrvN/AWGICmGICmGICmf8RlsRjs7hWgAAAAASUVORK5CYII=", "Argelia": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAACP0lEQVRIie2WT2gTQRTGv9lsd7eN0O52I2kSFcWAaDyIaFFEPChC6q0KuYh/qCBoanMVUXoRPEVoVVCkYk8q6kE82ZNgQRT/0CpKL4JpU7o2QW2ymTTZ8bDbNVbB2Rhv+U6P2Xnfb9/uvJkhOL4V9YrdfFl3rlB35j+qCW6C/5t82BLymqNR7JnF3hmyPScsZufEgCb4W72aEE99rFOkJkg8A59VY9EidvTuDw72iys1fiuRf+qGr7j2jHSWACAv43aUXRl5IK+LWLRsvnpvDI+qiR5l43pON96KdYq7Y0SnAPBGw5kdLC8v37lKk1PS2rDgb+Mx5K04NeFQZ9pweif7Jv3ylNFy9XtBiUVhWX9M/11cq1qliGeceHgTXKpVKNpB9sLQYmYWAATeNuGquNtwVhMV8CTM3PH5G/cK46+VWHT++h01EedE2uJ6wUiB2MG0H7QmQ08etsySkb4FxrJn07mR+5W5XCPBrgj7+5xGgjN+JwibUKo/x78MjQqtSiB1FIR0XUxpx3r5W5nrHz8PsIpARAtSFfum8Wi1M9554lBg4AgAq1ji5Lniqjgv4/Eq5ysn35H28lLyUst2DSZbIkEADW4nAOkYDAUAgiaujjv7lysiS6Kumm8/WCZv6bzgnIyTu5jN3pzDwzHS95HQqU+sUrUWigtPX2TPXSayxLltweshoVEMTOLAZyIuOyQSPcHzp0Rd5bfyBrbVQdFtkFCRXTrYL60Jrdi9zae1ezWpB+yqeb1tgpvgWv0AePi2AV+4f50AAAAASUVORK5CYII=", "Argentina": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAABLklEQVRIie3V3U7CMBQH8HO2jrIMNoxLJMYAKnDDI/ha+lb6GsZrL4UhkJiMhLEPZui+Wi98glYXEt3//n9+SXua4v3jO5wi2knUBm7gBv4TMAoh1Jq8YACoGVStThQ6LPo4BmsWL6Hi1Bl1+tOW3a8dzhM/Wj7n4bxkoajKLFzk6bZ3e9d2LuuF0+2c7V6j1UsXPSFECGNXN4+7K1lYbrl4keXxhh8PFnhUDyjZW+CVLCgOG16wGmEAjjpBQgQAtUTbEgggqpJXJQBKDZI7as0wW/Yg2y8SHGsRAOIn3Di027IHsustfcemO8ziqTPMKjZDnZybZ0Zv0rmYyM5Recd54qf+WxavUdeoc226I9nNUoS/w8scBNeMtlqdPDyt1Jo/zP/7JBq4gRv41/IFDgh4zo8uKw8AAAAASUVORK5CYII=", "Austria": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAAPUlEQVRIiWM8IaDHMBCAaUBsHbV41OJRi4eFxYz///8fEItHXlCPWjxq8ajFVAOMo22uUYtHLR61eMhZDAA8eQVDLC9J+wAAAABJRU5ErkJggg==", "Jordania": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAA6ElEQVRIic3TMQ6CMBQG4L9g48RAryA6GnYSZkPCoRw9CTteQKNewgMweQaeAwwaKVLgPf3zxqZf+/rqX4AH1B0KwlUDBFyB/CcwyfOvsCj/CQvxNpid74cZ+SEwCz8cnpl3hWfjSakRcFtJQmVJozINnsD3wk5ncuQtuwcBaU1ZRsYw3d4C+z4VBVUV5TlT8z10JorgedAaxmC57F4zMdaHTFOKYwpD2Vbzz/Z/ficesomqFRQ5T8ZthcMOx+342VrIk87wXKQDPC85COYgv8B8pBXmJjtgGfINliRb+LzGPsdpI0c2eQJhcQO0ncllFAAAAABJRU5ErkJggg==", "Colombia": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAARklEQVRIiWP8/4JhQADTwFg7avGoxaMWj1o8avGoxXgAI4NI34BYPPKCetTi4W8xS+63gwNiMeMtBoEBsXjkxfGoxcPfYgBBbwXT0ac4UQAAAABJRU5ErkJggg==", "RD del Congo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAACs0lEQVRIiWNkqP/PQBfAyPA/SmFNh34j39t3ryawsmBVxMz09+8/Ziraaix0YaJxpSH3hbdLWO8v5vj3i4EJUxET47805YXUslKA7WOPUe1BZx+1a5fvx3C8mcvy7xcDAwM2i82EzyYrL6bcSkaG/9EKqy97WqdyzX1ezvykjO3XU0a4LJag9pXeqc1/Q4X33p3PSmTbaiB4eYJRlSnvGXjYogEsPvaR2sHAwOAltZs8KyFhe8TFU+vGeeSwRQOMDPX/mZn+Vmr2V2r3MzH+w1Tx+qdIwvGp+17aEbQSLd1+Poo9ebJJ/xfL/80Iz07e0rvmmOUJsH1EVnTolVXc8ekvf4gRtBU53b5bjN2XTOwMQjF/hGN+n/9qwIicjxV4Hh118RBifw/hrnoYmHRqMsF8JcT+vkm3LVFp2dejjK8msiKnIGTAa/1XrOD3FxGBustV8+9FoSSur7+5+Fk/wbkczD/w24octs/KCIQtj/W/5Q+Dy3c0vPkhzICWqj2l9jAz/T37zmDJg7BmvVZniYOcLD++/+HAahxmmYAJkMM2f0/72XcGcCkUi31ldsy9G1N8vvXnX7Z9L+2WWqY6ih3e9swVzTgBto81Oj0ZyvO/HWO4P5EDf9h+E+Urv1o8/U4SWuAh4piZ6a+X5O7NTz3gctws3yxFTu95YY/wAeO/RKVlTbptPG8+EEy33Nb/59+Lqrtc9e6nIKYaRuIrCeQygWC6vfRNt+Bc28k3JrhMw15JoAGqhC1pFiOn2+flxKXb7dB0ix/gs5hgecuAFrb78IUtURbTImwJWEy7sMVnMU3DFrvFdAhbdIvpFrZogPHIEQ/i67L8syjlLSWARe3aZfqELRpgPCegiFUCJWwvUiFs0QCWfEytdEuaxbQLW5wWUz3dEraYPmGLbjHdwhYNAADoA/MpAUHHbQAAAABJRU5ErkJggg==", "Portugal": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAACWElEQVRIie3WT0jTYRzH8fdvv+23Pzp1fyRF2SqjQAc6R4EGBSUUBWZEdJOkskAKKugQQR06mocuQoeCRCiCCKRC6GCWLCnDzLSSHUxw06z2R+em2+/pIHRz+hsKHfa5Pl+eFx94nodHohVNEfe0za8W3cZsk4NzcA4G/TrnPKUcrWK3i3ADxvfIPShfNxm2mbjThCLoHSNgomGc30HUG1hjWK8hx7KEpcwvl91M10nyXh3ShdOosr0olZ/EEDXLBjVhl1PVPVubs7TXaPzxKksq5ZYR02RQeoBoQ+jQdSLOkTCVflpg5iH1xzcaPliBUaHAgnjqWDK51C/3J0Jzqoq7xapcvsBI3NUYXPCSqMQ0phnOdKr37aKzl4lJhIpQLObKyneRYn/EafN6ZaMFsDxCeYxo0qySuXF9CdN6Xn/Hc2pOUlMd3Z93lBdKktreNXLx8LQkovF5ItvBiVs7nKmxEKQW0QvECxt+ZySWTAt1OU10PsmbYl7aFhRiCVSDdjYzPDhL/wwdAyTTdoambp6pnv0VD/2M3zpbw9CUKjvLLbjeUtqfDSzjW3Uttsh5HxV2HHm+krrBZf9wwZ5Gt10u7D6t930I7/QWtX2TPOhvo5/RDK9xj/ta+DGLP2S+HvKVtQ+oMQHorFLkyt5gzZDiWdxiI9+pWV0bdph50sLAKNFleX/8QG3AZExLYWfcEO+LOlL2OgqayQtsArxi3z2BQeX5KFVuWoeJBRBHsCbJv4T+TzbquuCV1JZxrJq6bdRPoxtEfoYynCWpDf6X3C8zB+fg/w7+C/0QzwDFEQetAAAAAElFTkSuQmCC", "Uzbekist\u00e1n": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAB1klEQVRIie3Uv0sbYRgH8O97994Z43logmnFSqQVggTRaCtisSJpUAelFLpUBAc31/4FLiLSoYNDNjfRUWLFlnYVFDSldREzGWkjac1Jcr2fOQdB8qMOOZCDes/2vs/D87l7eN+XIL4FJ4Kp3hpp9b0f7JoKPugUGxo5WpoK1PPxF90AOkXvh6EwgGibf+FpyAZMK9bz4eCbx61jH/dUs1hdfaEaX9JZAJKmf06fA0gX1J3TcxswKR21h2UyMy/Ht/d3Mxc2etUUZaN+InpFnh5mpYoinmU2YhECNPHcWrQXQIdQvzraAyD2yL882GUDLht1XjcBCBxVTK10XzOLS8mUBRQMcymZAiBpxuLBCYDvf/LHOdkGzGJy+mYhacZUMFDQzYPsZUXdT1kFULSsX381AIpZ/K3q198qaYYNuPJUv/2anA21T7S3XOcS4wMNlPWwTGJigAF8ddzm2DMAoSZhPRYB8KojsDIctgGT6nvMEvL8YbNA2aNc3jCtM1kB0Ob1nMkKxzA+nssoqkApZUhO00WOArjUa/5p+npv97Zcf63NaglSSP64y/63w5ZlOQL/48l0YRd2YXtB5W9HjsBk7l2fIzD9NOpxBL5/h8uFXfj/g68ArxyTHpqUJQQAAAAASUVORK5CYII=", "Croacia": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAACq0lEQVRIie2UXUhTYRjH/2duwWJu2ZfuLJZ5ZurQGQtUEkTykEUm3YXFLkwQQvAmHRXSl15oGNaNeJEWXmjqjTqUBhOJ4RfdpLlMZAfFzS9Q8IPlcuvpwt0UQe+JQgT/nKv3efj934fzfx+OsDdS7JHvgfGftZZs/SLeBND/oKHvfgOAqbyi1WSrXA7HGK7lzJznd57dGGzv8MQoZqZ1t3IGeClEUdZAbmfrrCVJ+/T0h7cXrlU0P4kbfc8CZJ3YXt645Ku/nmIzTw2GiZsIHTnDTQvwzM+N2FJeTHslMat8c6XeXvaSEahk7IvZCbxSVyjUuoDeWDTndn/SuAwnlNy38IbKlLd1+yydc977nFe2GhVmBEY9ZutLCq33n796SqMM72i6DmUr0tOVqRfVuoyTK6qB4Yzvubkxxw+n9DUX+KaiJz8yEYn5e/h6qLW6Zc2aSRz3U4njVq1ZrdUtj94Ms9M4IubdZbfD40FaGkpLsb6OqioAqKmBToempkiptpaVRuwqLiaACguJiPz+yN0XFoiICgoIoJISdhhruACA5yGK0OvhciEYhCgCwNgYNBoYDBBF8LwMmoyJ3W4iou5uAkivjxzq9QSQw0FENDTEDtsXK7OrC4KAjg54vXA4IAgQBDgc8HrR3g5BQGcnO0zOP97chCTBbEZCApaWIEkAEBcHgyFS2tpih8l5TnV1kCRotUhMRCiE8XEAsFigUmF5GT4fTCZUVrLSZIRrN0G/hMtgIIB6eoiIenv/T7iMRgSD4LjfV7e3ER/PDuNiYxvZu135s6k782hrw+Ji5NX6/eB52GwTCv6SU4axvOeU7zSOHrMiEPjpNBAY1lquOI2yUPIm3lX20Y27l9XmjRlOoZjUmOrffR1Zi5YL+Rvjf6J9sbkOjA+MZekHQz8yc/uYzMMAAAAASUVORK5CYII=", "Inglaterra": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAAAfklEQVRIiWP4Tzp4vWD5OUEVOHo9fzkZhjAxDBAYtXjU4lGLRy0eehazvFm4glQ9X46fRucykmwx4zlBFZI1UQOMvDgeMIsZXy9YTqqeL8dPv1+1Cc4VDPXjsTIl1RAWkfgIUvUwMDAgW8xjaUqGISMvjkctHrV41OJRi8kGAOFggxhOe2P8AAAAAElFTkSuQmCC", "Ghana": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAABFklEQVRIiWM8J6jGMBCAaUBsHbV41OJRi4eFxYx/LoqRp/PavT+MDAyaSizkaSffx+v2/Fy35yfZ2imx+Ne6Pb/I1k5CQP34+f/a3b8Q9qt3/y7d/MPAwLDjyC8xIajrtVWY2dkYqW8xBzvjvSd/M5o+f/j8Hy7ok/2RgYGBl5uxq4jbSIsE00hOXA+e/Y2p+Hzi4m+4iJEWy9JOPlU5ZpLMISdV33n0V8P3HZx7c4uQsixptjKQl7i2HvrJwMAgLswkLszEwMCw5SA5aZsci9fu/uVkznZmleCFtYKetmzkpW2SLX774V+gC9vOmfySIkyigkybJvMHOLO9/fCPVHMYGbLtSdVDFTDyKolRi0ctHrWYagAA3BhUB6fO5NkAAAAASUVORK5CYII=", "Panam\u00e1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAIAAADRv8uKAAAABmJLR0QA/wD/AP+gvaeTAAABzElEQVRIiWP8//8/A7ngsYHBz4sXydPLRLatFILBavG5cx8oiAoKLO7vv3XixFtaWMyCR+7nz3+bNz8XFma3tBSmh8UfPvwuK7t09+7XFy9+fPz4e+7c+0eOvGFgYEhNVUxPV6KWxViCWkCAtbdXX1qa89q1TwwMDF++/Llz50txsRoVbcVuMQMDAy8vy5w5xry80PCIjpaLjJSloq04LWZgYNi379WPH/9qazUdHEQ3bHj27x+VEzfOxHXu3If9++2trYX//2eYNOn22bMfTE0FqWgxI64i89+//0xMjLi4EECTIhPNGkxbKQQDVmQyiohsIlvzng0GOmoc5OllefPmJ9kW/+XkZRYVIE/vYK2dhp7Fvx8+HBiLX6an//vwgd4W/3n69Ovu3Z/XrsWjBl99TCr4defOm6qqv+/f/335kuHfvzd1dZ9WrGBkZhYqKeFycUFTTE0fs6moiE2ezMTL+/PyZQYGhj/Pnv2+d0+4qgrTVipbzMDAwCIuLtraCucKpKdz2tlhVUn9OP60ciWrsrL0unU8/v6fli3D6USqW8wiJqZw8SITNzdPYODnlSv/vHjBIiGBqYyRgWE12XacPetiZDRaZA52iwFR+6Uk1rPX4QAAAABJRU5ErkJggg=="};
+const FEED_URL='https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json';
+
+const ISO={
+ 'México':'mx','Sudáfrica':'za','Corea del Sur':'kr','Chequia':'cz','Bosnia y Herzegovina':'ba','Canadá':'ca','Catar':'qa','Suiza':'ch',
+ 'Brasil':'br','Haití':'ht','Marruecos':'ma','Escocia':'gb-sct','Australia':'au','Paraguay':'py','Turquía':'tr','Estados Unidos':'us',
+ 'Curazao':'cw','Ecuador':'ec','Alemania':'de','Costa de Marfil':'ci','Japón':'jp','Países Bajos':'nl','Suecia':'se','Túnez':'tn',
+ 'Bélgica':'be','Egipto':'eg','Irán':'ir','Nueva Zelanda':'nz','Cabo Verde':'cv','Arabia Saudita':'sa','España':'es','Uruguay':'uy',
+ 'Francia':'fr','Irak':'iq','Noruega':'no','Senegal':'sn','Argelia':'dz','Argentina':'ar','Austria':'at','Jordania':'jo',
+ 'Colombia':'co','RD del Congo':'cd','Portugal':'pt','Uzbekistán':'uz','Croacia':'hr','Inglaterra':'gb-eng','Ghana':'gh','Panamá':'pa'
+};
+const DOW=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MON=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const STLABEL={group:'Grupo',R32:'16avos',R16:'8vos',QF:'4tos',SF:'Semi',TP:'3er',F:'Final'};
+
+const byNum={}; SCHEDULE.forEach(m=>byNum[m.n]=m);
+function flag(name){const d=FLAGS[name]||(ISO[name]?`https://flagcdn.com/w40/${ISO[name]}.png`:'');return d?`<img class="flag" src="${d}" alt="" loading="lazy">`:'';}
+function isToken(x){return /[0-9]/.test(x)||x.includes('/');}
+function fmtDate(iso){const [y,mo,d]=iso.split('-').map(Number);const dt=new Date(y,mo-1,d);return {dow:DOW[dt.getDay()],d,mon:MON[mo-1]};}
+function fmtTime(t){ // "13:00 UTC-6"
+  if(!t) return {st:'',ec:''};
+  const mt=t.match(/(\d{1,2}):(\d{2})\s*UTC([+-]\d{1,2})?/);
+  if(!mt) return {st:t,ec:''};
+  const hh=+mt[1],mm=+mt[2],off=mt[3]?+mt[3]:0;
+  let ec=hh*60+mm-off*60-300; let shift=0; // a UTC-5
+  while(ec<0){ec+=1440;shift--;} while(ec>=1440){ec-=1440;shift++;}
+  const eh=String(Math.floor(ec/60)).padStart(2,'0'),em=String(ec%60).padStart(2,'0');
+  return {st:`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`, ec:`${eh}:${em}${shift>0?' (+1)':shift<0?' (-1)':''}`};
+}
+
+/* ============ ESTADO ============ */
+const KEY='wc2026_calc_v2';
+let state={scores:{},feed:{},settings:{auto:true,over:false},lastUpdate:null};
+function load(){try{const r=localStorage.getItem(KEY);if(r)state=JSON.parse(r);}catch(e){}
+  state.scores=state.scores||{};state.feed=state.feed||{};state.settings=state.settings||{auto:true,over:false};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+load();
+/* estado de interfaz (no persistente) */
+let uiGroup='all', calMonth='2026-06', calSel=null, koRound='R32';
+const MLIST=['2026-06','2026-07'];
+const MONTHS_ES={'2026-06':'Junio 2026','2026-07':'Julio 2026'};
+const MONFULL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const fullMonth=iso=>MONFULL[(+iso.split('-')[1])-1];
+
+/* ============ TABLAS ============ */
+function groupFixtures(L){return SCHEDULE.filter(m=>m.stage==='group'&&m.group===L).sort((a,b)=>a.date.localeCompare(b.date)||a.n-b.n);}
+function standings(L){
+  const t=GROUPS[L],st={};t.forEach(n=>st[n]={team:n,pj:0,g:0,e:0,pp:0,gf:0,gc:0});
+  const f=groupFixtures(L);
+  for(const m of f){const s=state.scores[m.n];if(!s||s.h==null||s.a==null)continue;
+    const H=st[m.t1],A=st[m.t2];H.pj++;A.pj++;H.gf+=s.h;H.gc+=s.a;A.gf+=s.a;A.gc+=s.h;
+    if(s.h>s.a){H.g++;A.pp++;}else if(s.h<s.a){A.g++;H.pp++;}else{H.e++;A.e++;}}
+  const arr=Object.values(st).map(x=>({...x,pts:x.g*3+x.e,dg:x.gf-x.gc}));
+  arr.sort((a,b)=>b.pts-a.pts||b.dg-a.dg||b.gf-a.gf||a.team.localeCompare(b.team));
+  for(let i=0;i<arr.length;){let j=i;while(j+1<arr.length&&arr[j+1].pts===arr[i].pts&&arr[j+1].dg===arr[i].dg&&arr[j+1].gf===arr[i].gf)j++;
+    if(j>i){const tied=arr.slice(i,j+1).map(x=>x.team);const h={};tied.forEach(n=>h[n]={pts:0,dg:0,gf:0});
+      for(const m of f){const s=state.scores[m.n];if(!s||s.h==null||s.a==null)continue;
+        if(tied.includes(m.t1)&&tied.includes(m.t2)){h[m.t1].gf+=s.h;h[m.t1].dg+=s.h-s.a;h[m.t2].gf+=s.a;h[m.t2].dg+=s.a-s.h;
+          if(s.h>s.a)h[m.t1].pts+=3;else if(s.h<s.a)h[m.t2].pts+=3;else{h[m.t1].pts++;h[m.t2].pts++;}}}
+      const sub=arr.slice(i,j+1).sort((a,b)=>h[b.team].pts-h[a.team].pts||h[b.team].dg-h[a.team].dg||h[b.team].gf-h[a.team].gf||a.team.localeCompare(b.team));
+      for(let k=0;k<sub.length;k++)arr[i+k]=sub[k];}
+    i=j+1;}
+  return arr;
+}
+function groupComplete(L){return groupFixtures(L).every(m=>{const s=state.scores[m.n];return s&&s.h!=null&&s.a!=null;});}
+function allGroupsComplete(){return Object.keys(GROUPS).every(groupComplete);}
+function thirdsRanked(){
+  const list=[];for(const L of Object.keys(GROUPS)){if(!groupComplete(L))continue;const s=standings(L)[2];list.push({...s,grp:L});}
+  list.sort((a,b)=>b.pts-a.pts||b.dg-a.dg||b.gf-a.gf||a.team.localeCompare(b.team));return list;
+}
+
+/* ===== asignación de terceros a los slots del cuadro (backtracking) ===== */
+let _thirdCache={sig:null,map:{}};
+function thirdAssignment(){
+  if(!allGroupsComplete())return {};
+  const ranked=thirdsRanked().slice(0,8);
+  const sig=ranked.map(r=>r.grp).join('');
+  if(_thirdCache.sig===sig)return _thirdCache.map;
+  const slots=SCHEDULE.filter(m=>m.stage==='R32'&&m.t2[0]==='3').map(m=>m.t2);
+  const allowed={};slots.forEach(s=>allowed[s]=s.replace('3','').split('/'));
+  const used=new Array(ranked.length).fill(false);const map={};
+  function bt(si){
+    if(si>=slots.length)return true;
+    const slot=slots[si];
+    for(let k=0;k<ranked.length;k++){
+      if(!used[k]&&allowed[slot].includes(ranked[k].grp)){
+        used[k]=true;map[slot]=ranked[k].team;
+        if(bt(si+1))return true;
+        used[k]=false;delete map[slot];
+      }
+    }
+    return false;
+  }
+  bt(0);_thirdCache={sig,map};return map;
+}
+
+/* ===== resolución de equipos en eliminatorias ===== */
+function resolveSlot(tok){
+  if(/^[12][A-L]$/.test(tok)){const L=tok[1];if(!groupComplete(L))return null;return standings(L)[tok[0]==='1'?0:1].team;}
+  if(tok[0]==='3'){if(!allGroupsComplete())return null;return thirdAssignment()[tok]||null;}
+  let mt=tok.match(/^W(\d+)$/);if(mt)return koWinner(+mt[1]);
+  mt=tok.match(/^L(\d+)$/);if(mt)return koLoser(+mt[1]);
+  return tok; // nombre real
+}
+function koTeams(n){
+  const ft=state.feed[n];const m=byNum[n];
+  const t1 = ft&&ft.t1 ? ft.t1 : resolveSlot(m.t1);
+  const t2 = ft&&ft.t2 ? ft.t2 : resolveSlot(m.t2);
+  return {t1,t2};
+}
+function koWinner(n){const {t1,t2}=koTeams(n);if(!t1||!t2)return null;const s=state.scores[n];if(!s||s.h==null||s.a==null)return null;
+  if(s.h>s.a)return t1;if(s.a>s.h)return t2;if(s.pk==='h')return t1;if(s.pk==='a')return t2;return null;}
+function koLoser(n){const {t1,t2}=koTeams(n);const w=koWinner(n);if(!w)return null;return w===t1?t2:t1;}
+function slotLabel(tok){
+  if(/^1[A-L]$/.test(tok))return '1º Grupo '+tok[1];
+  if(/^2[A-L]$/.test(tok))return '2º Grupo '+tok[1];
+  if(tok[0]==='3')return '3º ('+tok.replace('3','').replace(/\//g,'/')+')';
+  let mt=tok.match(/^W(\d+)$/);if(mt)return 'Ganador M'+mt[1];
+  mt=tok.match(/^L(\d+)$/);if(mt)return 'Perdedor M'+mt[1];
+  return tok;
+}
+
+/* ============ INPUTS DE MARCADOR (reutilizable) ============ */
+function scoreInputs(n,cls){
+  const s=state.scores[n]||{};const auto=s.src==='auto'?'auto':'';
+  return `<div class="score">
+    <input type="number" min="0" inputmode="numeric" class="${cls||''} ${auto}" data-n="${n}" data-side="h" value="${s.h!=null?s.h:''}">
+    <span class="dash">–</span>
+    <input type="number" min="0" inputmode="numeric" class="${cls||''} ${auto}" data-n="${n}" data-side="a" value="${s.a!=null?s.a:''}">
+  </div>`;
+}
+
+/* ============ RENDER: GRUPOS ============ */
+function chipsHTML(menu, items, active){
+  return items.map(it=>`<div class="chip ${it.k===active?'active':''}" data-menu="${menu}" data-key="${it.k}">${it.lbl}</div>`).join('');
+}
+function renderGroups(){
+  const letters=Object.keys(GROUPS);
+  const items=[{k:'all',lbl:'Todos'}].concat(letters.map(L=>({k:L,lbl:'Grupo '+L})));
+  document.getElementById('groupMenu').innerHTML=chipsHTML('grp',items,uiGroup);
+  const host=document.getElementById('groups');host.innerHTML='';
+  const show = uiGroup==='all' ? letters : [uiGroup];
+  for(const L of show){
+    const f=groupFixtures(L);
+    let fx='';
+    f.forEach(m=>{const dt=fmtDate(m.date);
+      fx+=`<div class="match">
+        <div class="mdate">${dt.dow.slice(0,3)}<br>${dt.d} ${dt.mon}</div>
+        <div class="side"><span class="nm">${m.t1}</span>${flag(m.t1)}</div>
+        ${scoreInputs(m.n)}
+        <div class="side away">${flag(m.t2)}<span class="nm">${m.t2}</span></div>
+      </div>`;});
+    host.insertAdjacentHTML('beforeend',`
+      <div class="group"><div class="ghead"><div class="gletter">${L}</div>
+        <div><h3>Grupo ${L}</h3><div class="gdates">${GROUPS[L].join(' · ')}</div></div></div>
+        <div class="gbody"><div class="fixtures">${fx}</div>
+        <div class="stand" id="stand_${L}">${standTable(L)}</div></div></div>`);
+  }
+}
+function standTable(L){
+  const rows=standings(L);let body='';
+  rows.forEach((r,i)=>{let cls='',badge='';
+    if(i<2){cls='q'+(i+1);badge='<span class="badge b-green">CLASIFICA</span>';}
+    else if(i===2){cls='q3';badge='<span class="badge b-amber">3º</span>';}
+    body+=`<tr class="${cls}"><td class="pos">${i+1}</td>
+      <td class="tn"><div class="teamcell">${flag(r.team)}<span class="nm">${r.team}</span> ${badge}</div></td>
+      <td>${r.pj}</td><td>${r.g}-${r.e}-${r.pp}</td><td>${r.gf}:${r.gc}</td>
+      <td>${r.dg>0?'+':''}${r.dg}</td><td class="pts">${r.pts}</td></tr>`;});
+  return `<table><thead><tr><th>#</th><th class="tn">Equipo</th><th>PJ</th><th>G-E-P</th><th>GF:GC</th><th>DG</th><th>Pts</th></tr></thead><tbody>${body}</tbody></table>`;
+}
+
+/* ============ RENDER: CALENDARIO (mes + elegir fecha) ============ */
+function calCounts(){const d={};SCHEDULE.forEach(m=>d[m.date]=(d[m.date]||0)+1);return d;}
+function cMatchCard(m){
+  const tm=fmtTime(m.time);const ko=m.stage!=='group';
+  let t1,t2;if(ko){const r=koTeams(m.n);t1=r.t1;t2=r.t2;}else{t1=m.t1;t2=m.t2;}
+  const tag=m.stage==='group'?'G'+m.group:STLABEL[m.stage];
+  const teamRow=(t,tok)=>`<div class="cteam">${t?flag(t):''}<span class="nm ${t?'':'ph'}">${t||slotLabel(tok)}</span></div>`;
+  const canScore=!ko||(t1&&t2);
+  const sc=canScore?scoreInputs(m.n,''):'<div class="score" style="opacity:.35"><input disabled><span class="dash">–</span><input disabled></div>';
+  return `<div class="cmatch">
+    <div class="ci"><span class="ctag ${ko?'ko':''}">${tag}</span><span class="ctime">${tm.st}</span><span class="cec">🇪🇨 ${tm.ec}</span></div>
+    <div class="cteams">${teamRow(t1,m.t1)}${teamRow(t2,m.t2)}<div class="cvenue">${m.ground||''}</div></div>
+    <div class="cscore">${sc}</div></div>`;
+}
+function renderCalendar(){
+  const counts=calCounts();const allDates=Object.keys(counts).sort();
+  if(!calSel){calSel=counts['2026-06-11']?'2026-06-11':allDates[0];calMonth=calSel.slice(0,7);}
+  const idx=MLIST.indexOf(calMonth);
+  const [yy,mm]=calMonth.split('-').map(Number);
+  const startDow=(new Date(yy,mm-1,1).getDay()+6)%7; // Lunes=0
+  const dim=new Date(yy,mm,0).getDate();const today='2026-06-11';
+  let cells='';for(let i=0;i<startDow;i++)cells+=`<div class="calday"></div>`;
+  for(let d=1;d<=dim;d++){
+    const ds=`${calMonth}-${String(d).padStart(2,'0')}`;const has=(counts[ds]||0)>0;
+    const cls=['calday'];if(has)cls.push('has');if(ds===calSel)cls.push('sel');if(ds===today)cls.push('today');
+    cells+=`<div class="${cls.join(' ')}" ${has?`data-date="${ds}"`:''}>${d}${has?'<span class="dot"></span>':''}</div>`;
+  }
+  const dow=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'].map(x=>`<div class="caldow">${x}</div>`).join('');
+  const nav=`<div class="calnav"><button data-nav="prev" ${idx<=0?'disabled':''}>‹</button>
+    <span class="mlabel">${MONTHS_ES[calMonth]}</span>
+    <button data-nav="next" ${idx>=MLIST.length-1?'disabled':''}>›</button></div>`;
+  const grid=`<div class="cal">${nav}<div class="calgrid">${dow}${cells}</div>
+    <div class="calleg"><span><i class="lg today"></i>Hoy</span><span><i class="lg has"></i>Con partidos</span><span>Toca un día para ver los partidos</span></div></div>`;
+  const fd=fmtDate(calSel);
+  const ms=SCHEDULE.filter(m=>m.date===calSel).sort((a,b)=>(a.time||'').localeCompare(b.time||'')||a.n-b.n);
+  const list=`<div class="dayhead">${fd.dow} ${fd.d} de ${fullMonth(calSel)}</div>`+(ms.map(cMatchCard).join('')||'<p class="intro">Sin partidos este día.</p>');
+  document.getElementById('calendar').innerHTML=grid+list;
+}
+
+/* ============ RENDER: TERCEROS ============ */
+function renderThirds(){
+  const host=document.getElementById('thirds');const ranked=thirdsRanked();
+  if(!ranked.length){host.innerHTML=`<div class="third-row"><span class="nm" style="color:var(--mut);font-weight:600">Termina al menos un grupo para ver a sus terceros aquí.</span></div>`;return;}
+  host.innerHTML=ranked.map((r,i)=>`<div class="third-row ${i<8?'in':''}"><span class="rank">${i+1}</span>${flag(r.team)}
+    <span class="nm">${r.team}</span><span class="grp">Grupo ${r.grp}</span>
+    <span class="st">${r.pts} pts · ${r.dg>0?'+':''}${r.dg} DG · ${r.gf} GF</span>
+    ${i<8?'<span class="badge b-green">CLASIFICA</span>':'<span class="badge" style="background:rgba(138,151,173,.15);color:var(--mut)">FUERA</span>'}</div>`).join('');
+}
+
+/* ============ RENDER: ELIMINATORIAS (selector de ronda) ============ */
+function renderKO(){
+  const champ=koWinner(104);const cb=document.getElementById('champ');
+  cb.innerHTML=champ
+    ?`<div class="champ"><div class="lbl">★ Campeón del Mundo 2026 ★</div><div class="team">${flag(champ)}${champ}</div></div>`
+    :`<div class="champ empty"><div class="lbl">Campeón del Mundo 2026</div><div class="team">Por definir</div></div>`;
+  const rounds=[{k:'R32',lbl:'16avos'},{k:'R16',lbl:'Octavos'},{k:'QF',lbl:'Cuartos'},{k:'SF',lbl:'Semis'},{k:'FIN',lbl:'Final'}];
+  document.getElementById('koMenu').innerHTML=chipsHTML('ko',rounds,koRound);
+  const sts = koRound==='FIN' ? ['TP','F'] : [koRound];
+  const ms=SCHEDULE.filter(m=>sts.includes(m.stage)).sort((a,b)=>a.n-b.n);
+  document.getElementById('koList').innerHTML=ms.map(koCard).join('');
+}
+function koCard(m){
+  const n=m.n;const {t1,t2}=koTeams(n);const s=state.scores[n]||{};const w=koWinner(n);
+  const title=m.stage==='F'?'FINAL':m.stage==='TP'?'Tercer puesto':'';
+  const auto=s.src==='auto'?'auto':'';const dt=fmtDate(m.date);
+  const side=(team,tok,side,win)=>`<div class="ko-side ${win?'win':''}">${team?flag(team):''}
+    <span class="nm ${team?'':'ph'}">${team||slotLabel(tok)}</span>
+    <input class="ski ${auto}" type="number" min="0" inputmode="numeric" data-n="${n}" data-side="${side}" value="${s[side]!=null?s[side]:''}" ${team?'':'disabled'}></div>`;
+  const tie=s.h!=null&&s.a!=null&&s.h===s.a;
+  let pk='';if(tie){pk=`<div class="ko-pk"><span>Penales:</span>
+    <button class="pkbtn ${s.pk==='h'?'sel':''}" data-n="${n}" data-pick="h">${t1||'Local'}</button>
+    <button class="pkbtn ${s.pk==='a'?'sel':''}" data-n="${n}" data-pick="a">${t2||'Visita'}</button></div>`;}
+  return `<div class="ko-match"><div class="mid">${title?'<b>'+title+'</b> · ':''}M${n} · ${dt.d} ${dt.mon} · ${m.ground||''}</div>
+    ${side(t1,m.t1,'h',w&&w===t1)}${side(t2,m.t2,'a',w&&w===t2)}${pk}</div>`;
+}
+
+/* ============ AUTOLLENADO DESDE OPENFOOTBALL ============ */
+function buildIndex(){
+  const byMeta={},byTeams={};
+  SCHEDULE.forEach(m=>{
+    byMeta[`${m.date}|${m.time||''}|${m.ground||''}`]=m.n;
+    if(m.stage==='group'){byTeams[`${m.group}|${[m.t1,m.t2].sort().join('~')}`]=m.n;}
+  });
+  return {byMeta,byTeams};
+}
+function readScore(m){
+  let h=null,a=null,pen=null;
+  if(m.score){
+    if(Array.isArray(m.score.ft)&&m.score.ft.length>=2){h=+m.score.ft[0];a=+m.score.ft[1];}
+    if(Array.isArray(m.score.p)&&m.score.p.length>=2)pen=[+m.score.p[0],+m.score.p[1]];
+  }
+  if(h==null&&m.score1!=null){h=+m.score1;a=+m.score2;}
+  if(h==null||isNaN(h)||a==null||isNaN(a))return null;
+  return {h,a,pen};
+}
+let syncing=false;
+async function fetchResults(manual){
+  if(syncing)return;syncing=true;setSync(true,'Actualizando…');
+  try{
+    const res=await fetch(FEED_URL,{cache:'no-store'});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const {byMeta,byTeams}=buildIndex();
+    const over=state.settings.over;let filled=0,named=0;
+    for(const fm of (data.matches||[])){
+      const es1=EN2ES[fm.team1]||fm.team1, es2=EN2ES[fm.team2]||fm.team2;
+      let n=null;
+      const g=(fm.group||'').replace('Group ','').trim();
+      if(g){n=byTeams[`${g}|${[es1,es2].sort().join('~')}`]??null;}
+      if(n==null)n=byMeta[`${fm.date}|${fm.time||''}|${fm.ground||''}`]??null;
+      if(n==null)continue;
+      const sm=byNum[n];
+      if(sm.stage!=='group'&&!isToken(es1)&&!isToken(es2)){
+        state.feed[n]={t1:es1,t2:es2};named++;
+      }
+      const sc=readScore(fm);
+      if(sc){
+        const cur=state.scores[n];
+        if(cur&&cur.src==='manual'&&!over)continue;
+        const obj={h:sc.h,a:sc.a,src:'auto'};
+        if(sm.stage!=='group'&&sc.h===sc.a&&sc.pen)obj.pk=sc.pen[0]>sc.pen[1]?'h':'a';
+        state.scores[n]=obj;filled++;
+      }
+    }
+    state.lastUpdate=Date.now();save();
+    _thirdCache={sig:null,map:{}};
+    renderCurrent();
+    const time=new Date(state.lastUpdate).toLocaleString('es-EC',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
+    setSync(false,`<b>${filled}</b> marcadores cargados · actualizado ${time}`);
+  }catch(e){
+    setSync(false,'No se pudo actualizar ahora. Revisa tu conexión e intenta de nuevo.');
+  }
+  syncing=false;
+}
+function setSync(busy,msg){
+  const b=document.getElementById('btnSync');
+  b.disabled=busy;
+  b.querySelector('.ic').innerHTML=busy?'<span class="spin"></span>':'🔄';
+  b.querySelector('.tx').textContent=busy?'Actualizando…':'Actualizar resultados';
+  if(msg)document.getElementById('syncStatus').innerHTML=msg;
+}
+
+/* ============ TABS + EVENTOS ============ */
+let activeTab='grupos';
+function renderCurrent(){
+  if(activeTab==='grupos'){renderGroups();}
+  else if(activeTab==='calendario'){renderCalendar();}
+  else if(activeTab==='terceros'){renderThirds();}
+  else if(activeTab==='eliminatorias'){renderKO();}
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');
+  activeTab=t.dataset.tab;
+  ['grupos','calendario','terceros','eliminatorias'].forEach(n=>document.getElementById('tab-'+n).classList.toggle('hidden',n!==activeTab));
+  renderCurrent();window.scrollTo({top:0,behavior:'smooth'});
+}));
+
+// delegación: marcadores
+document.addEventListener('change',e=>{
+  const el=e.target;if(!el.matches('input[data-n]'))return;
+  const n=+el.dataset.n,side=el.dataset.side;
+  const v=el.value===''?null:Math.max(0,parseInt(el.value,10));
+  state.scores[n]=state.scores[n]||{h:null,a:null};
+  state.scores[n][side]=isNaN(v)?null:v;
+  state.scores[n].src='manual';
+  const s=state.scores[n];if(s.h!=null&&s.a!=null&&s.h!==s.a)s.pk=null;
+  _thirdCache={sig:null,map:{}};save();
+  // refresco focalizado en grupos; en otras vistas re-render completo (el cambio ya hizo blur)
+  if(activeTab==='grupos'){const m=byNum[n];if(m&&m.group)document.getElementById('stand_'+m.group).innerHTML=standTable(m.group);}
+  else renderCurrent();
+});
+document.addEventListener('click',e=>{
+  if(!e.target.matches('.pkbtn'))return;
+  const n=+e.target.dataset.n,pick=e.target.dataset.pick;
+  state.scores[n]=state.scores[n]||{};
+  state.scores[n].pk=state.scores[n].pk===pick?null:pick;
+  save();renderCurrent();
+});
+// submenús (chips), calendario y navegación de mes
+document.addEventListener('click',e=>{
+  const chip=e.target.closest('.chip');
+  if(chip){
+    if(chip.dataset.menu==='grp'){uiGroup=chip.dataset.key;renderGroups();window.scrollTo({top:0,behavior:'smooth'});}
+    else if(chip.dataset.menu==='ko'){koRound=chip.dataset.key;renderKO();}
+    return;
+  }
+  const day=e.target.closest('.calday.has');
+  if(day){calSel=day.dataset.date;renderCalendar();return;}
+  const nav=e.target.closest('[data-nav]');
+  if(nav){const i=MLIST.indexOf(calMonth);const ni=nav.dataset.nav==='prev'?i-1:i+1;
+    if(ni>=0&&ni<MLIST.length){calMonth=MLIST[ni];renderCalendar();}return;}
+});
+
+document.getElementById('btnSync').addEventListener('click',()=>fetchResults(true));
+document.getElementById('btnReset').addEventListener('click',()=>{
+  if(confirm('¿Borrar todos los marcadores y resultados cargados?')){
+    state={scores:{},feed:{},settings:state.settings,lastUpdate:null};
+    _thirdCache={sig:null,map:{}};save();renderCurrent();setSync(false,'Listo. Empieza de cero.');}
+});
+document.getElementById('btnExport').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mundial-2026-marcadores.json';a.click();URL.revokeObjectURL(u);
+});
+const oa=document.getElementById('optAuto'),oo=document.getElementById('optOver');
+oa.checked=state.settings.auto;oo.checked=state.settings.over;
+oa.addEventListener('change',()=>{state.settings.auto=oa.checked;save();});
+oo.addEventListener('change',()=>{state.settings.over=oo.checked;save();});
+
+/* ============ INIT ============ */
+renderCurrent();
+if(state.lastUpdate){const time=new Date(state.lastUpdate).toLocaleString('es-EC',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
+  setSync(false,`Última actualización: ${time}`);}
+if(state.settings.auto)fetchResults(false);
+
+/* ============ PWA (instalable en el celular) ============ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
