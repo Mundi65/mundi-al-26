@@ -611,7 +611,14 @@ async function fetchResults(manual){
     _thirdCache={sig:null,map:{}};
     renderCurrent();
     const time=new Date(state.lastUpdate).toLocaleString('es-EC',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
-    setSync(false,`<b>${filled}</b> marcadores cargados · actualizado ${time}`);
+    const totReal=Object.values(state.scores).filter(s=>s&&s.src==='auto').length;
+    if(filled>0){
+      setSync(false,`✅ <b>${filled}</b> resultado(s) real(es) cargado(s) · ${totReal} en total · ${time}`);
+    } else if(totReal>0){
+      setSync(false,`Sin novedades nuevas. Tienes ${totReal} resultado(s) real(es) cargado(s). · ${time}`);
+    } else {
+      setSync(false,`Aún no hay resultados publicados en la fuente (se actualiza ~1 vez al día). Vuelve a intentar más tarde. · ${time}`);
+    }
   }catch(e){
     setSync(false,'No se pudo actualizar ahora. Revisa tu conexión e intenta de nuevo.');
   }
