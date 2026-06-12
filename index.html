@@ -264,7 +264,7 @@
 
   <div class="ubar">
     <button class="sync" id="btnSync"><span class="ic">🔄</span><span class="tx">Actualizar resultados</span></button>
-    <div class="status" id="syncStatus">Resultados reales desde openfootball (se actualiza ~1 vez al día).</div>
+    <div class="status" id="syncStatus">Resultados reales en vivo (ESPN) con respaldo de openfootball. Solo carga partidos finalizados.</div>
     <label><input type="checkbox" id="optAuto"> Actualizar al abrir</label>
   </div>
 
@@ -297,7 +297,7 @@
 
   <footer>
     <b>Tus datos se guardan en este navegador</b> (localStorage) — funciona offline y en GitHub Pages.<br>
-    Resultados reales: openfootball/worldcup.json (dominio público, sin API key). Actualiza aprox. 1 vez al día.<br>
+    Resultados reales: ESPN (en vivo, datos públicos) con respaldo de openfootball. Solo carga partidos finalizados.<br>
     Cuando llega el resultado real, queda en verde y bloqueado (ya no se puede cambiar).<br>
     La asignación de los 8 terceros en el cuadro usa una aproximación; cuando el dato real llega, sobrescribe los nombres.<br>
     Hecho para DIGIWAV · Edmundo Guillén
@@ -560,67 +560,131 @@ function koCard(m){
     ${side(t1,m.t1,'h',w&&w===t1)}${side(t2,m.t2,'a',w&&w===t2)}${pk}</div>`;
 }
 
-/* ============ AUTOLLENADO DESDE OPENFOOTBALL ============ */
+/* ============ AUTOLLENADO DE RESULTADOS REALES ============ */
+const ESPN_URL='https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=20260611-20260719&limit=400';
+
+// normaliza nombres (minúsculas, sin acentos ni símbolos)
+function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
+// alias de nombres de ESPN (inglés) -> español de la app
+const ESP2ES={mexico:'México',southafrica:'Sudáfrica',southkorea:'Corea del Sur',korearepublic:'Corea del Sur',
+ czechrepublic:'Chequia',czechia:'Chequia',canada:'Canadá',qatar:'Catar',switzerland:'Suiza',
+ bosniaherzegovina:'Bosnia y Herzegovina',bosniaandherzegovina:'Bosnia y Herzegovina',brazil:'Brasil',haiti:'Haití',
+ morocco:'Marruecos',scotland:'Escocia',australia:'Australia',paraguay:'Paraguay',turkey:'Turquía',turkiye:'Turquía',
+ unitedstates:'Estados Unidos',usa:'Estados Unidos',curacao:'Curazao',ecuador:'Ecuador',germany:'Alemania',
+ ivorycoast:'Costa de Marfil',cotedivoire:'Costa de Marfil',japan:'Japón',netherlands:'Países Bajos',sweden:'Suecia',
+ tunisia:'Túnez',belgium:'Bélgica',egypt:'Egipto',iran:'Irán',newzealand:'Nueva Zelanda',capeverde:'Cabo Verde',
+ saudiarabia:'Arabia Saudita',spain:'España',uruguay:'Uruguay',france:'Francia',iraq:'Irak',norway:'Noruega',
+ senegal:'Senegal',algeria:'Argelia',argentina:'Argentina',austria:'Austria',jordan:'Jordania',colombia:'Colombia',
+ drcongo:'RD del Congo',congodr:'RD del Congo',democraticrepublicofthecongo:'RD del Congo',portugal:'Portugal',
+ uzbekistan:'Uzbekistán',croatia:'Croacia',england:'Inglaterra',ghana:'Ghana',panama:'Panamá'};
+// añade los propios nombres en español como llaves válidas
+Object.keys(ISO).forEach(sp=>{ESP2ES[norm(sp)]=ESP2ES[norm(sp)]||sp;});
+function espTeam(team){
+  if(!team)return null;
+  for(const c of [team.displayName,team.name,team.shortDisplayName,team.location]){
+    const k=norm(c); if(k&&ESP2ES[k])return ESP2ES[k];
+  }
+  return null;
+}
+function matchUTC(m){
+  const mt=(m.time||'').match(/(\d{1,2}):(\d{2})\s*UTC([+-]\d{1,2})?/); if(!mt)return null;
+  const [Y,Mo,D]=m.date.split('-').map(Number);
+  return Date.UTC(Y,Mo-1,D,+mt[1],+mt[2]) - (mt[3]?+mt[3]:0)*3600000;
+}
+function findMyMatch(hn,an,utcISO){
+  const set=[norm(hn),norm(an)].sort().join('|');
+  for(const m of SCHEDULE){ if(m.stage==='group'){
+    if([norm(m.t1),norm(m.t2)].sort().join('|')===set)return m.n; } }
+  const et=Date.parse(utcISO||''); if(isNaN(et))return null;
+  let best=null,bd=1e15;
+  for(const m of SCHEDULE){ if(m.stage!=='group'){ const mt=matchUTC(m); if(mt==null)continue;
+    const d=Math.abs(mt-et); if(d<bd){bd=d;best=m.n;} } }
+  return bd<=2*3600000?best:null;
+}
+function espShootout(details,homeId,awayId){
+  let h=0,a=0;
+  for(const d of (details||[])){ if(d&&d.shootout&&d.scoringPlay){const t=d.team&&String(d.team.id);
+    if(t===String(homeId))h++; else if(t===String(awayId))a++;}}
+  return (h||a)?{h,a}:null;
+}
+// Fuente 1: ESPN (en vivo). Candado: SOLO eventos del 2026 y SOLO finalizados.
+async function fetchFromESPN(){
+  const res=await fetch(ESPN_URL,{cache:'no-store'});
+  if(!res.ok)throw new Error('espn '+res.status);
+  const data=await res.json(); let filled=0;
+  for(const ev of (data.events||[])){
+    const yr=ev.season&&ev.season.year; const d=ev.date||'';
+    if(yr!==2026 && !String(d).startsWith('2026')) continue;     // 🔒 candado 2026
+    const comp=(ev.competitions||[])[0]; if(!comp)continue;
+    const stt=comp.status&&comp.status.type; if(!stt||!stt.completed)continue; // solo finalizados
+    const cs=comp.competitors||[]; if(cs.length<2)continue;
+    const home=cs.find(c=>c.homeAway==='home')||cs[0];
+    const away=cs.find(c=>c.homeAway==='away')||cs[1];
+    const hs=parseInt(home.score,10), as=parseInt(away.score,10);
+    if(isNaN(hs)||isNaN(as))continue;
+    const hn=espTeam(home.team), an=espTeam(away.team); if(!hn||!an)continue;
+    let pk=null;
+    if(hs===as){const sh=espShootout(comp.details,home.team&&home.team.id,away.team&&away.team.id);
+      if(sh)pk=sh.h>=sh.a?'h':'a';}
+    const n=findMyMatch(hn,an,ev.date); if(n==null)continue;
+    const sm=byNum[n];
+    if(sm.stage!=='group')state.feed[n]={t1:hn,t2:an};
+    const obj={h:hs,a:as,src:'auto'}; if(sm.stage!=='group'&&pk)obj.pk=pk;
+    state.scores[n]=obj; filled++;
+  }
+  return filled;
+}
+// Fuente 2 (respaldo): openfootball. Solo llena lo que ESPN no trajo.
 function buildIndex(){
   const byMeta={},byTeams={};
-  SCHEDULE.forEach(m=>{
-    byMeta[`${m.date}|${m.time||''}|${m.ground||''}`]=m.n;
-    if(m.stage==='group'){byTeams[`${m.group}|${[m.t1,m.t2].sort().join('~')}`]=m.n;}
-  });
+  SCHEDULE.forEach(m=>{ byMeta[`${m.date}|${m.time||''}|${m.ground||''}`]=m.n;
+    if(m.stage==='group')byTeams[`${m.group}|${[m.t1,m.t2].sort().join('~')}`]=m.n; });
   return {byMeta,byTeams};
 }
 function readScore(m){
   let h=null,a=null,pen=null;
-  if(m.score){
-    if(Array.isArray(m.score.ft)&&m.score.ft.length>=2){h=+m.score.ft[0];a=+m.score.ft[1];}
-    if(Array.isArray(m.score.p)&&m.score.p.length>=2)pen=[+m.score.p[0],+m.score.p[1]];
-  }
+  if(m.score){ if(Array.isArray(m.score.ft)&&m.score.ft.length>=2){h=+m.score.ft[0];a=+m.score.ft[1];}
+    if(Array.isArray(m.score.p)&&m.score.p.length>=2)pen=[+m.score.p[0],+m.score.p[1]]; }
   if(h==null&&m.score1!=null){h=+m.score1;a=+m.score2;}
-  if(h==null||isNaN(h)||a==null||isNaN(a))return null;
-  return {h,a,pen};
+  if(h==null||isNaN(h)||a==null||isNaN(a))return null; return {h,a,pen};
+}
+async function fetchFromOpenfootball(){
+  const res=await fetch(FEED_URL,{cache:'no-store'});
+  if(!res.ok)throw new Error('of '+res.status);
+  const data=await res.json(); const {byMeta,byTeams}=buildIndex(); let filled=0;
+  for(const fm of (data.matches||[])){
+    const es1=EN2ES[fm.team1]||fm.team1, es2=EN2ES[fm.team2]||fm.team2; let n=null;
+    const g=(fm.group||'').replace('Group ','').trim();
+    if(g)n=byTeams[`${g}|${[es1,es2].sort().join('~')}`]??null;
+    if(n==null)n=byMeta[`${fm.date}|${fm.time||''}|${fm.ground||''}`]??null;
+    if(n==null)continue;
+    const sm=byNum[n];
+    if(sm.stage!=='group'&&!isToken(es1)&&!isToken(es2))state.feed[n]={t1:es1,t2:es2};
+    const sc=readScore(fm); if(!sc)continue;
+    if(state.scores[n]&&state.scores[n].src==='auto')continue; // no pisar lo de ESPN
+    const obj={h:sc.h,a:sc.a,src:'auto'};
+    if(sm.stage!=='group'&&sc.h===sc.a&&sc.pen)obj.pk=sc.pen[0]>sc.pen[1]?'h':'a';
+    state.scores[n]=obj;filled++;
+  }
+  return filled;
 }
 let syncing=false;
 async function fetchResults(manual){
   if(syncing)return;syncing=true;setSync(true,'Actualizando…');
-  try{
-    const res=await fetch(FEED_URL,{cache:'no-store'});
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    const {byMeta,byTeams}=buildIndex();
-    let filled=0,named=0;
-    for(const fm of (data.matches||[])){
-      const es1=EN2ES[fm.team1]||fm.team1, es2=EN2ES[fm.team2]||fm.team2;
-      let n=null;
-      const g=(fm.group||'').replace('Group ','').trim();
-      if(g){n=byTeams[`${g}|${[es1,es2].sort().join('~')}`]??null;}
-      if(n==null)n=byMeta[`${fm.date}|${fm.time||''}|${fm.ground||''}`]??null;
-      if(n==null)continue;
-      const sm=byNum[n];
-      if(sm.stage!=='group'&&!isToken(es1)&&!isToken(es2)){
-        state.feed[n]={t1:es1,t2:es2};named++;
-      }
-      const sc=readScore(fm);
-      if(sc){
-        // El resultado real es la verdad: siempre reemplaza el pronóstico y queda bloqueado.
-        const obj={h:sc.h,a:sc.a,src:'auto'};
-        if(sm.stage!=='group'&&sc.h===sc.a&&sc.pen)obj.pk=sc.pen[0]>sc.pen[1]?'h':'a';
-        state.scores[n]=obj;filled++;
-      }
-    }
-    state.lastUpdate=Date.now();save();
-    _thirdCache={sig:null,map:{}};
-    renderCurrent();
-    const time=new Date(state.lastUpdate).toLocaleString('es-EC',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
-    const totReal=Object.values(state.scores).filter(s=>s&&s.src==='auto').length;
-    if(filled>0){
-      setSync(false,`✅ <b>${filled}</b> resultado(s) real(es) cargado(s) · ${totReal} en total · ${time}`);
-    } else if(totReal>0){
-      setSync(false,`Sin novedades nuevas. Tienes ${totReal} resultado(s) real(es) cargado(s). · ${time}`);
-    } else {
-      setSync(false,`Aún no hay resultados publicados en la fuente (se actualiza ~1 vez al día). Vuelve a intentar más tarde. · ${time}`);
-    }
-  }catch(e){
-    setSync(false,'No se pudo actualizar ahora. Revisa tu conexión e intenta de nuevo.');
+  let filled=0; let okAny=false; let errs=[];
+  try{ filled+=await fetchFromESPN(); okAny=true; }catch(e){ errs.push('ESPN'); }
+  try{ filled+=await fetchFromOpenfootball(); okAny=true; }catch(e){ errs.push('openfootball'); }
+  state.lastUpdate=Date.now();save();_thirdCache={sig:null,map:{}};renderCurrent();
+  const time=new Date(state.lastUpdate).toLocaleString('es-EC',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
+  const totReal=Object.values(state.scores).filter(s=>s&&s.src==='auto').length;
+  if(!okAny){
+    setSync(false,'No se pudo actualizar. Revisa tu conexión e intenta de nuevo.');
+  } else if(filled>0){
+    setSync(false,`✅ <b>${filled}</b> resultado(s) real(es) cargado(s) · ${totReal} en total · ${time}`);
+  } else if(totReal>0){
+    setSync(false,`Sin novedades nuevas. Tienes ${totReal} resultado(s) real(es) cargado(s). · ${time}`);
+  } else {
+    setSync(false,`Aún no hay partidos finalizados con resultado disponible. Vuelve a intentar más tarde. · ${time}`);
   }
   syncing=false;
 }
